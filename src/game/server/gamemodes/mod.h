@@ -4,13 +4,40 @@
 #define GAME_SERVER_GAMEMODES_MOD_H
 #include <game/server/gamecontroller.h>
 
-// you can subclass GAMECONTROLLER_CTF, GAMECONTROLLER_TDM etc if you want
-// todo a modification with their base as well.
-class CGameControllerMOD : public IGameController
+namespace tour
 {
-public:
+    class Tournament;
+    class Lineup;
+}
+
+class CGameControllerMOD: public IGameController
+{
+    private:
+        class tour::Tournament *_tour;
+        class tour::Lineup *_lineUp;
+        int _announceOverride;
+        char *_announceOverrideMsg;
+    public:
 	CGameControllerMOD(class CGameContext *pGameServer);
+
+        virtual ~CGameControllerMOD();
+
 	virtual void Tick();
-	// add more virtual functions here if you wish
+
+        void forceAnnounce(const char *msg, int ticks);
+        void doAnnounce() const;
+        void onEnter(int cid) const;
+        void onLeave(int cid) const;
+        void onFreeze(int cid) const;
+        void onUnfreeze(int cid) const;
+        void onFail(int failpid, int killpid) const;
+        bool onTeamSelect(int cid, int team) const;
+        void onNoobStyle(int cid) const;
+
+        bool isTourRunning() const;
+        bool isTeamSelect() const;
+
+        void dump() const;
 };
 #endif
+

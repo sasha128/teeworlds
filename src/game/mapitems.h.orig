@@ -47,27 +47,6 @@ enum
 	TILE_DEATH,
 	TILE_NOHOOK,
 	
-	TILE_FREEZE=9,
-	TILE_FAIL=10,
-	TILE_UNFREEZE=11,
-	TILE_LINGER=12,
-	TILE_UPCOMING=13,
-
-	TILE_TS_0=16,
-	TILE_TS_7=23,
-	TILE_TS_SOLO=24,
-
-	TILE_ARENA_1H=80,/*TODO define arena spawnpoints in map specific configuration tile*/
-	TILE_ARENA_8G=95,/*the h/g stuff was from a former version and allows 2 teams per arena maximum*/
-
-	TILE_RANK_1=96,
-	TILE_RANK_16=111,
-
-	TILE_TPORT_FIRST=112,
-	TILE_TPORT_LAST=191,
-
-	TILE_CUSTOM_END,
-
 	TILEFLAG_VFLIP=1,
 	TILEFLAG_HFLIP=2,
 	TILEFLAG_OPAQUE=4,

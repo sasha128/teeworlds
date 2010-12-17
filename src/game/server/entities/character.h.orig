@@ -62,10 +62,6 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
 	
-	bool Freeze(int ticks);
-	bool Unfreeze();
-	void Teleport(vec2 dest);
-
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -134,15 +130,6 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
-
-	int m_FreezeTime;
-	int m_FreezeTick;//will get updated on every REFREEZE_INTERVAL ticks
-	int m_FreezeStart;//will be set on the first freeze
-	int lastts;
-	int solo;
-	int forceEmote;
-	int m_GroundHooked;
-	int m_nooblvl;
 };
 
 #endif

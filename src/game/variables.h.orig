@@ -71,16 +71,6 @@ MACRO_CONFIG_INT(SvInactiveKick, sv_inactivekick, 1, 0, 2, CFGFLAG_SERVER, "How 
 MACRO_CONFIG_INT(SvVoteKick, sv_vote_kick, 1, 0, 1, CFGFLAG_SERVER, "Allow voting to kick players")
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
 
-// tournament mod
-MACRO_CONFIG_INT(SvFreezeTime, sv_freeze_time, 5, 0, 20, CFGFLAG_SERVER, "freeze time in 1/2 seconds (stars)")
-MACRO_CONFIG_INT(SvSpawnFreezeTime, sv_spawn_freeze_time, 2, 0, 5, CFGFLAG_SERVER, "spawn freeze time in 1/2 seconds (stars)")
-MACRO_CONFIG_INT(SvLMSMatchFailLimit, sv_lms_match_fail_limit, 3, 1, 100, CFGFLAG_SERVER, "how many times may a team fail before losing a match")
-MACRO_CONFIG_INT(SvLMSMatchMaxTime, sv_lms_match_max_time, 60, 5, 3600, CFGFLAG_SERVER, "lms match timeout in seconds")
-MACRO_CONFIG_INT(SvTourFinDelay, sv_tour_fin_delay, 3, 10, 60, CFGFLAG_SERVER, "ranking delay")
-MACRO_CONFIG_INT(SvTourStartDelay, sv_tour_start_delay, 5, 5, 60, CFGFLAG_SERVER, "teamselect delay")
-MACRO_CONFIG_INT(SvNoobThreshold, sv_noob_threshold,100,0,5000,CFGFLAG_SERVER, "groundhook threshold")
-MACRO_CONFIG_INT(SvNoobPenalty, sv_noob_penalty,8,1,20,CFGFLAG_SERVER, "groundhook penalty (in stars)")
-
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
 	MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "")
@@ -88,5 +78,4 @@ MACRO_CONFIG_INT(SvNoobPenalty, sv_noob_penalty,8,1,20,CFGFLAG_SERVER, "groundho
 
 MACRO_CONFIG_INT(DbgFocus, dbg_focus, 0, 0, 1, CFGFLAG_CLIENT, "")
 MACRO_CONFIG_INT(DbgTuning, dbg_tuning, 0, 0, 1, CFGFLAG_CLIENT, "")
-
 #endif

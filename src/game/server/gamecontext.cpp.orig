@@ -4,7 +4,6 @@
 #include <base/math.h>
 #include <engine/shared/config.h>
 #include <engine/map.h>
-#include <cstring>
 #include <engine/console.h>
 #include "gamecontext.h"
 #include <game/version.h>
@@ -14,7 +13,6 @@
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
 #include "gamemodes/mod.h"
-#include "gamemodes/tour/Util.h"
 
 enum
 {
@@ -509,8 +507,6 @@ void CGameContext::OnClientEnter(int ClientId)
 	str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' team=%d", ClientId, Server()->ClientName(ClientId), m_apPlayers[ClientId]->GetTeam());
 	Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
 
-	((CGameControllerMOD*)m_pController)->onEnter(ClientId);
-
 	m_VoteUpdate = true;
 }
 
@@ -552,8 +548,6 @@ void CGameContext::OnClientDrop(int ClientId)
 	
 	(void)m_pController->CheckTeamBalance();
 	m_VoteUpdate = true;
-
-	((CGameControllerMOD*)m_pController)->onLeave(ClientId);
 }
 
 void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
@@ -591,11 +585,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 				*pMessage = ' ';
 			pMessage++;
 		}
-		if (strncmp(pMsg->m_pMessage,"/dump",5) == 0) {
-			((CGameControllerMOD*)m_pController)->dump();
-		} else {
+		
 		SendChat(ClientId, Team, pMsg->m_pMessage);
-	}
 	}
 	else if(MsgId == NETMSGTYPE_CL_CALLVOTE)
 	{
@@ -734,6 +725,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 		
 		if(p->GetTeam() == pMsg->m_Team || (g_Config.m_SvSpamprotection && p->m_Last_SetTeam && p->m_Last_SetTeam+Server()->TickSpeed()*3 > Server()->Tick()))
 			return;
+
 		// Switch team on given client and kill/respawn him
 		if(m_pController->CanJoinTeam(pMsg->m_Team, ClientId))
 		{
@@ -744,11 +736,6 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 					m_VoteUpdate = true;
 				p->SetTeam(pMsg->m_Team);
 				(void)m_pController->CheckTeamBalance();
-				if (p->GetTeam() == -1) {
-					((CGameControllerMOD*)m_pController)->onLeave(ClientId);
-				} else {
-					((CGameControllerMOD*)m_pController)->onEnter(ClientId);
-				}
 			}
 			else
 				SendBroadcast("Teams must be balanced, please join other team", ClientId);
@@ -769,19 +756,9 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 			
 		p->m_Last_ChangeInfo = Server()->Tick();
 		
-		if (!p->forcecolor) {
-			p->origusecustcolor=pMsg->m_UseCustomColor;
-			p->origbodycolor=pMsg->m_ColorBody;
-			p->origfeetcolor=pMsg->m_ColorFeet;
-		}
-
-		p->m_TeeInfos.m_UseCustomColor  = (p->forcecolor)?1:pMsg->m_UseCustomColor;
-		p->m_TeeInfos.m_ColorBody = (p->forcecolor)?p->forcecolor:pMsg->m_ColorBody;
-		p->m_TeeInfos.m_ColorFeet = (p->forcecolor)?p->forcecolor:pMsg->m_ColorFeet;
-		
-//		p->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
-//		p->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
-//		p->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
+		p->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
+		p->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
+		p->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 
 		// copy old name
 		char aOldName[MAX_NAME_LENGTH];
@@ -826,7 +803,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 	{
 		CNetMsg_Cl_Emoticon *pMsg = (CNetMsg_Cl_Emoticon *)pRawMsg;
 		
-		if(g_Config.m_SvSpamprotection && p->m_Last_Emote && p->m_Last_Emote+(Server()->TickSpeed()>>1) > Server()->Tick())
+		if(g_Config.m_SvSpamprotection && p->m_Last_Emote && p->m_Last_Emote+Server()->TickSpeed()*3 > Server()->Tick())
 			return;
 			
 		p->m_Last_Emote = Server()->Tick();
@@ -838,9 +815,9 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 		if(p->m_Last_Kill && p->m_Last_Kill+Server()->TickSpeed()*3 > Server()->Tick())
 			return;
 		
-//		p->m_Last_Kill = Server()->Tick();
-//		p->KillCharacter(WEAPON_SELF);
-//		p->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*3;
+		p->m_Last_Kill = Server()->Tick();
+		p->KillCharacter(WEAPON_SELF);
+		p->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*3;
 	}
 }
 
@@ -1037,7 +1014,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 
 	m_Layers.Init(Kernel());
 	m_Collision.Init(&m_Layers);
-	portmap = m_Collision.GetPortMap();
+
 	// reset everything here
 	//world = new GAMEWORLD;
 	//players = new CPlayer[MAX_CLIENTS];
@@ -1096,7 +1073,6 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 #endif
-	tour::Util::setGameCtx(this);
 }
 
 void CGameContext::OnShutdown()
@@ -1128,12 +1104,3 @@ const char *CGameContext::Version() { return GAME_VERSION; }
 const char *CGameContext::NetVersion() { return GAME_NETVERSION; }
 
 IGameServer *CreateGameServer() { return new CGameContext; }
-
-vec2 CGameContext::TeleportDestination(int num) const {
-	if (portmap && portmap->count(num)) {
-		int n = (*portmap)[num]->size();
-		int chosen = rand() % n;
-		return (*(*portmap)[num])[chosen];
-	}
-	return vec2(0,0);
-}
