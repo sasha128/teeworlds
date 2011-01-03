@@ -6,6 +6,7 @@
 // this include should perhaps be removed
 #include "entities/character.h"
 #include "gamecontext.h"
+#include <game/server/gamemodes/payload/CPayloadClass.h>
 
 // player object
 class CPlayer
@@ -33,6 +34,8 @@ public:
 	
 	void KillCharacter(int Weapon = WEAPON_GAME);
 	CCharacter *GetCharacter();
+	class CPayloadClass *GetClass() { return m_pClass; }
+	void SetClass(CPayloadClass *c) { m_pClass = c; }
 	
 	//---------------------------------------------------------
 	// this is used for snapping so we know how we can clip the view for the player
@@ -82,7 +85,7 @@ private:
 	bool m_Spawning;
 	int m_ClientID;
 	int m_Team;
-
+	class CPayloadClass *m_pClass;
 	// network latency calculations	
 	struct
 	{

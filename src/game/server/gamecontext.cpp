@@ -407,12 +407,12 @@ void CGameContext::OnTick()
 			if(m_VoteUpdate)
 			{
 				// count votes
-				char aaBuf[MAX_CLIENTS][64] = {{0}};
-				for(int i = 0; i < MAX_CLIENTS; i++)
+				char aaBuf[MAX_CLIENTS-1][64] = {{0}};
+				for(int i = 0; i < MAX_CLIENTS-1; i++)
 					if(m_apPlayers[i])
 						Server()->GetClientIP(i, aaBuf[i], 64);
-				bool aVoteChecked[MAX_CLIENTS] = {0};
-				for(int i = 0; i < MAX_CLIENTS; i++)
+				bool aVoteChecked[MAX_CLIENTS-1] = {0};
+				for(int i = 0; i < MAX_CLIENTS-1; i++)
 				{
 					if(!m_apPlayers[i] || m_apPlayers[i]->GetTeam() == -1 || aVoteChecked[i])	// don't count in votes by spectators
 						continue;
@@ -421,7 +421,7 @@ void CGameContext::OnTick()
 					int ActVotePos = m_apPlayers[i]->m_VotePos;
 					
 					// check for more players with the same ip (only use the vote of the one who voted first)
-					for(int j = i+1; j < MAX_CLIENTS; ++j)
+					for(int j = i+1; j < MAX_CLIENTS-1; ++j)
 					{
 						if(!m_apPlayers[j] || aVoteChecked[j] || str_comp(aaBuf[j], aaBuf[i]))
 							continue;
@@ -500,6 +500,10 @@ void CGameContext::OnClientEnter(int ClientId)
 {
 	//world.insert_entity(&players[client_id]);
 	m_apPlayers[ClientId]->Respawn();
+
+	if(ClientId == MAX_CLIENTS-1)
+		return;
+
 	char aBuf[512];
 	str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", Server()->ClientName(ClientId), m_pController->GetTeamName(m_apPlayers[ClientId]->GetTeam()));
 	SendChat(-1, CGameContext::CHAT_ALL, aBuf); 
@@ -514,20 +518,15 @@ void CGameContext::OnClientConnected(int ClientId)
 {
 	// Check which team the player should be on
 	const int StartTeam = g_Config.m_SvTournamentMode ? -1 : m_pController->GetAutoTeam(ClientId);
-
+	dbg_msg("gctx","OnClientConnected(%i): startteam: %i",ClientId,StartTeam);
 	m_apPlayers[ClientId] = new(ClientId) CPlayer(this, ClientId, StartTeam);
 	//players[client_id].init(client_id);
 	//players[client_id].client_id = client_id;
 	
 	(void)m_pController->CheckTeamBalance();
 
-#ifdef CONF_DEBUG
-	if(g_Config.m_DbgDummies)
-	{
-		if(ClientId >= MAX_CLIENTS-g_Config.m_DbgDummies)
+	if(ClientId == MAX_CLIENTS-1)
 			return;
-	}
-#endif
 
 	// send active vote
 	if(m_VoteCloseTime)
@@ -542,6 +541,7 @@ void CGameContext::OnClientConnected(int ClientId)
 void CGameContext::OnClientDrop(int ClientId)
 {
 	AbortVoteKickOnDisconnect(ClientId);
+	dbg_msg("gctx","OnClientDrop(%i)",ClientId);
 	m_apPlayers[ClientId]->OnDisconnect();
 	delete m_apPlayers[ClientId];
 	m_apPlayers[ClientId] = 0;
@@ -721,6 +721,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 	}
 	else if (MsgId == NETMSGTYPE_CL_SETTEAM && !m_World.m_Paused)
 	{
+		dbg_msg("gctx","NETMSGTYPE_CL_SETTEAM from %d",ClientId);
 		CNetMsg_Cl_SetTeam *pMsg = (CNetMsg_Cl_SetTeam *)pRawMsg;
 		
 		if(p->GetTeam() == pMsg->m_Team || (g_Config.m_SvSpamprotection && p->m_Last_SetTeam && p->m_Last_SetTeam+Server()->TickSpeed()*3 > Server()->Tick()))
@@ -749,6 +750,8 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 	}
 	else if (MsgId == NETMSGTYPE_CL_CHANGEINFO || MsgId == NETMSGTYPE_CL_STARTINFO)
 	{
+		dbg_msg("gctx","NETMSGTYPE_CL_%sINFO from %d",(MsgId == NETMSGTYPE_CL_CHANGEINFO)?"CHANGE":"START",ClientId);
+
 		CNetMsg_Cl_ChangeInfo *pMsg = (CNetMsg_Cl_ChangeInfo *)pRawMsg;
 		
 		if(g_Config.m_SvSpamprotection && p->m_Last_ChangeInfo && p->m_Last_ChangeInfo+Server()->TickSpeed()*5 > Server()->Tick())
@@ -1019,27 +1022,33 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	//world = new GAMEWORLD;
 	//players = new CPlayer[MAX_CLIENTS];
 
-	// select gametype
-	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
-		m_pController = new CGameControllerMOD(this);
-	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
-		m_pController = new CGameControllerCTF(this);
-	else if(str_comp(g_Config.m_SvGametype, "tdm") == 0)
-		m_pController = new CGameControllerTDM(this);
-	else
-		m_pController = new CGameControllerDM(this);
-
-	Server()->SetBrowseInfo(m_pController->m_pGameType, -1);
-
-	// setup core world
-	//for(int i = 0; i < MAX_CLIENTS; i++)
-	//	game.players[i].core.world = &game.world.core;
-
 	// create all entities from the game layer
 	CMapItemLayerTilemap *pTileMap = m_Layers.GameLayer();
 	CTile *pTiles = (CTile *)Kernel()->RequestInterface<IMap>()->GetData(pTileMap->m_Data);
-	
-	
+
+
+	// select gametype
+	if(str_comp(g_Config.m_SvGametype, "mod") == 0)
+	{
+		if (!((CGameControllerMOD*)(m_pController = new CGameControllerMOD(this)))
+				->Init(pTiles,pTileMap->m_Width,pTileMap->m_Height))
+			dbg_msg("gcx", "crap map. RTFM.");
+	}
+	else if(str_comp(g_Config.m_SvGametype, "ctf") == 0)
+	{
+		m_pController = new CGameControllerCTF(this);
+	}
+	else if(str_comp(g_Config.m_SvGametype, "tdm") == 0)
+	{
+		m_pController = new CGameControllerTDM(this);
+	}
+	else
+	{
+		m_pController = new CGameControllerDM(this);
+	}
+
+	Server()->SetBrowseInfo(m_pController->m_pGameType, -1);
+
 	
 	
 	/*

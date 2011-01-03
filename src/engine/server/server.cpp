@@ -330,7 +330,11 @@ int CServer::GetClientInfo(int ClientID, CClientInfo *pInfo)
 
 void CServer::GetClientIP(int ClientID, char *pIPString, int Size)
 {
-	if(ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CClient::STATE_INGAME)
+	if(ClientID == MAX_CLIENTS-1)
+	{
+		str_copy(pIPString,"0.0.0.0",8);
+	}
+	else if(ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CClient::STATE_INGAME)
 	{
 		NETADDR Addr = m_NetServer.ClientAddr(ClientID);
 		str_format(pIPString, Size, "%d.%d.%d.%d", Addr.ip[0], Addr.ip[1], Addr.ip[2], Addr.ip[3]);
@@ -347,7 +351,9 @@ int *CServer::LatestInput(int ClientId, int *size)
 
 const char *CServer::ClientName(int ClientId)
 {
-	if(ClientId < 0 || ClientId >= MAX_CLIENTS || m_aClients[ClientId].m_State == CServer::CClient::STATE_EMPTY)
+	if (ClientId == MAX_CLIENTS-1)
+		return "PAYLOAD";
+	else if(ClientId < 0 || ClientId >= MAX_CLIENTS || m_aClients[ClientId].m_State == CServer::CClient::STATE_EMPTY)
 		return "(invalid client)";
 	else if(m_aClients[ClientId].m_State < CServer::CClient::STATE_READY)
 		return "(connecting client)";
@@ -356,7 +362,7 @@ const char *CServer::ClientName(int ClientId)
 
 bool CServer::ClientIngame(int ClientID)
 {
-	return ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME;
+	return ClientID == MAX_CLIENTS - 1 || (ClientID >= 0 && ClientID < MAX_CLIENTS && m_aClients[ClientID].m_State == CServer::CClient::STATE_INGAME);
 }
 
 int CServer::SendMsg(CMsgPacker *pMsg, int Flags, int ClientId)
@@ -371,6 +377,9 @@ int CServer::SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System)
 		return -1;
 		
 	mem_zero(&Packet, sizeof(CNetChunk));
+	
+	if(ClientID >= MAX_CLIENTS-1)
+		return 0;
 	
 	Packet.m_ClientID = ClientID;
 	Packet.m_pData = pMsg->Data();

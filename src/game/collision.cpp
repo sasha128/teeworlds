@@ -34,18 +34,21 @@ void CCollision::Init(class CLayers *pLayers)
 		if(Index > 128)
 			continue;
 		
-		switch(Index)
+		if  (Index == TILE_DEATH)
 		{
-		case TILE_DEATH:
 			m_pTiles[i].m_Index = COLFLAG_DEATH;
-			break;
-		case TILE_SOLID:
+		}
+		else if (Index == TILE_SOLID)
+		{
 			m_pTiles[i].m_Index = COLFLAG_SOLID;
-			break;
-		case TILE_NOHOOK:
+		}
+		else if (Index == TILE_NOHOOK)
+		{
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
-			break;
-		default:
+		}
+		else if (!(Index >= TILE_BASEDOOR_FROM && Index <= TILE_BASEDOOR_TO) /* keep indices of these, */
+				&& !(Index >= TILE_PATH_START && Index <= TILE_PATH_FIN))/* we care about later*/
+		{
 			m_pTiles[i].m_Index = 0;
 		}
 	}
@@ -61,7 +64,8 @@ int CCollision::GetTile(int x, int y)
 
 bool CCollision::IsTileSolid(int x, int y)
 {
-	return GetTile(x,y)&COLFLAG_SOLID;
+	int i = GetTile(x,y);
+	return i<=7 && (i&COLFLAG_SOLID);
 }
 
 // TODO: rewrite this smarter!

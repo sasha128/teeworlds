@@ -62,10 +62,16 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
 	
+
+
+	
+	void SetCoreVel(vec2 vel);
+	void SetPos(vec2 pos);
+	vec2 GetPos();
+
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
-	
 	bool m_Alive;
 
 	// weapon info

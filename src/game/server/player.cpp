@@ -18,6 +18,8 @@ CPlayer::CPlayer(CGameContext *pGameServer, int CID, int Team)
 	this->m_ClientID = CID;
 	m_Team = GameServer()->m_pController->ClampTeam(Team);
 	m_LastActionTick = Server()->Tick();
+	m_pClass = NULL;
+	dbg_msg("player","player constructed, id %i, team %i",CID,m_Team);
 }
 
 CPlayer::~CPlayer()
@@ -28,7 +30,8 @@ CPlayer::~CPlayer()
 
 void CPlayer::Tick()
 {
-	if(!Server()->ClientIngame(m_ClientID))
+//	dbg_msg("player","Player Tick() for id %i, ig: %i, has char: %i, might spawn: %i",m_ClientID,Server()->ClientIngame(m_ClientID),Character?1:0, !Character && m_DieTick+Server()->TickSpeed()*3 <= Server()->Tick());
+	if(!Server()->ClientIngame(m_ClientID) && m_ClientID != MAX_CLIENTS-1)
 		return;
 
 	Server()->SetClientScore(m_ClientID, m_Score);
@@ -75,7 +78,7 @@ void CPlayer::Tick()
 
 void CPlayer::Snap(int SnappingClient)
 {
-	if(!Server()->ClientIngame(m_ClientID))
+	if(!Server()->ClientIngame(m_ClientID) && m_ClientID != MAX_CLIENTS-1)
 		return;
 
 	CNetObj_ClientInfo *pClientInfo = static_cast<CNetObj_ClientInfo *>(Server()->SnapNewItem(NETOBJTYPE_CLIENTINFO, m_ClientID, sizeof(CNetObj_ClientInfo)));
@@ -105,6 +108,7 @@ void CPlayer::Snap(int SnappingClient)
 
 void CPlayer::OnDisconnect()
 {
+	dbg_msg("player","OnDisconnect(), id %i, ig: %i",m_ClientID,Server()->ClientIngame(m_ClientID));
 	KillCharacter();
 
 	if(Server()->ClientIngame(m_ClientID))
@@ -155,6 +159,7 @@ CCharacter *CPlayer::GetCharacter()
 
 void CPlayer::KillCharacter(int Weapon)
 {
+	dbg_msg("KillCharacter() - char does %sexist",Character?"":"not ");
 	if(Character)
 	{
 		Character->Die(m_ClientID, Weapon);
@@ -165,6 +170,7 @@ void CPlayer::KillCharacter(int Weapon)
 
 void CPlayer::Respawn()
 {
+	dbg_msg("player","Respawn() id %i (team %i)",m_ClientID,m_Team);
 	if(m_Team > -1)
 		m_Spawning = true;
 }
@@ -196,8 +202,12 @@ void CPlayer::TryRespawn()
 {
 	vec2 SpawnPos = vec2(100.0f, -60.0f);
 	
+	dbg_msg("player", "TryRespawn() - invoke for id %i", m_ClientID);
+
 	if(!GameServer()->m_pController->CanSpawn(this, &SpawnPos))
 		return;
+
+	dbg_msg("player", "TryRespawn() - can spawn for id %i", m_ClientID);
 
 	// check if the position is occupado
 	CEntity *apEnts[2] = {0};
@@ -205,6 +215,7 @@ void CPlayer::TryRespawn()
 	
 	if(NumEnts == 0)
 	{
+		dbg_msg("player", "TryRespawn() - will actually spawn, id %i, at (%f, %f)", m_ClientID, SpawnPos.x, SpawnPos.y);
 		m_Spawning = false;
 		Character = new(m_ClientID) CCharacter(&GameServer()->m_World);
 		Character->Spawn(this, SpawnPos);

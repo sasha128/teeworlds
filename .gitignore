@@ -6,3 +6,7 @@ config.lua
 
 teeworlds_d
 teeworlds_srv_d
+
+pay.cfg
+pl.map
+payload.map

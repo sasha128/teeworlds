@@ -45,6 +45,10 @@ CCharacter::CCharacter(CGameWorld *pWorld)
 	m_ProximityRadius = ms_PhysSize;
 	m_Health = 0;
 	m_Armor = 0;
+	mem_zero(&m_LatestPrevInput, sizeof m_LatestPrevInput);
+	mem_zero(&m_LatestInput, sizeof m_LatestInput);
+	mem_zero(&m_PrevInput, sizeof m_PrevInput);
+	mem_zero(&m_Input, sizeof m_Input);
 }
 
 void CCharacter::Reset()
@@ -60,7 +64,7 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_ActiveWeapon = WEAPON_GUN;
 	m_LastWeapon = WEAPON_HAMMER;
 	m_QueuedWeapon = -1;
-	
+	m_Core.m_CID = pPlayer->GetCID();
 	m_pPlayer = pPlayer;
 	m_Pos = Pos;
 	
@@ -503,6 +507,7 @@ void CCharacter::SetEmote(int Emote, int Tick)
 
 void CCharacter::OnPredictedInput(CNetObj_PlayerInput *pNewInput)
 {
+	if (m_pPlayer->GetCID() == MAX_CLIENTS-1) return;
 	// check for changes
 	if(mem_comp(&m_Input, pNewInput, sizeof(CNetObj_PlayerInput)) != 0)
 		m_LastAction = Server()->Tick();
@@ -518,6 +523,7 @@ void CCharacter::OnPredictedInput(CNetObj_PlayerInput *pNewInput)
 
 void CCharacter::OnDirectInput(CNetObj_PlayerInput *pNewInput)
 {
+	if (m_pPlayer->GetCID() == MAX_CLIENTS-1) return;
 	mem_copy(&m_LatestPrevInput, &m_LatestInput, sizeof(m_LatestInput));
 	mem_copy(&m_LatestInput, pNewInput, sizeof(m_LatestInput));
 	
@@ -542,16 +548,19 @@ void CCharacter::Tick()
 	}
 
 	m_Core.m_Input = m_Input;
+//	dbg_msg("char","core vel of %i: (%f, %f), inpdir: %i",m_pPlayer->GetCID(),m_Core.m_Vel.x,m_Core.m_Vel.y,m_Input.m_Direction);
 	m_Core.Tick(true);
 	
-	// handle death-tiles
-	if(GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH ||
-		GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f)&CCollision::COLFLAG_DEATH)
+
+	int a, b, c, d;
+	if( (  ((a= GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f))  <=7)&& (a&CCollision::COLFLAG_DEATH)) ||
+		(  ((b= GameServer()->Collision()->GetCollisionAt(m_Pos.x+m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f))  <=7)&& (b&CCollision::COLFLAG_DEATH)) ||
+		(  ((c= GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y-m_ProximityRadius/3.f))  <=7)&& (c&CCollision::COLFLAG_DEATH)) ||
+		(  ((d= GameServer()->Collision()->GetCollisionAt(m_Pos.x-m_ProximityRadius/3.f, m_Pos.y+m_ProximityRadius/3.f))  <=7)&& (d&CCollision::COLFLAG_DEATH)))
 	{
 		Die(m_pPlayer->GetCID(), WEAPON_WORLD);
 	}
+
 
 	// kill player when leaving gamelayer
 	if((int)m_Pos.x/32 < -200 || (int)m_Pos.x/32 > GameServer()->Collision()->GetWidth()+200 ||
@@ -568,6 +577,19 @@ void CCharacter::Tick()
 	// Previnput
 	m_PrevInput = m_Input;
 	return;
+}
+
+vec2 CCharacter::GetPos()
+{
+	return m_Pos;
+}
+void CCharacter::SetPos(vec2 vel)
+{
+	m_Pos = m_Core.m_Pos = vel;
+}
+void CCharacter::SetCoreVel(vec2 vel)
+{
+	m_Core.m_Vel = vel;
 }
 
 void CCharacter::TickDefered()

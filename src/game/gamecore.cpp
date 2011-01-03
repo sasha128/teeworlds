@@ -88,12 +88,18 @@ void CCharacterCore::Tick(bool UseInput)
 	
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
+
+	if (m_CID != MAX_CLIENTS - 1) {
 	m_Vel.y += m_pWorld->m_Tuning.m_Gravity;
+	}
 	
 	float MaxSpeed = Grounded ? m_pWorld->m_Tuning.m_GroundControlSpeed : m_pWorld->m_Tuning.m_AirControlSpeed;
 	float Accel = Grounded ? m_pWorld->m_Tuning.m_GroundControlAccel : m_pWorld->m_Tuning.m_AirControlAccel;
 	float Friction = Grounded ? m_pWorld->m_Tuning.m_GroundFriction : m_pWorld->m_Tuning.m_AirFriction;
 	
+//	dbg_msg("ccore","Tick(%s): gnd: %i, trgDir: (%f,%f), acc: %f, fric: %f",UseInput?"true":"false",Grounded,TargetDirection.x,TargetDirection.y, Accel, Friction);
+//	dbg_msg("ccore","dir: %i (inp: %i), vx: %f, vy: %f",m_Direction, UseInput?m_Input.m_Direction:-1337,m_Vel.x,m_Vel.y);
+
 	// handle input
 	if(UseInput)
 	{
@@ -210,7 +216,7 @@ void CCharacterCore::Tick(bool UseInput)
 		if(m_pWorld && m_pWorld->m_Tuning.m_PlayerHooking)
 		{
 			float Dist = 0.0f;
-			for(int i = 0; i < MAX_CLIENTS; i++)
+			for(int i = 0; i < MAX_CLIENTS -1; i++)
 			{
 				CCharacterCore *p = m_pWorld->m_apCharacters[i];
 				if(!p || p == this)
@@ -302,7 +308,7 @@ void CCharacterCore::Tick(bool UseInput)
 		}
 	}
 	
-	if(m_pWorld && m_pWorld->m_Tuning.m_PlayerCollision)
+	if(m_pWorld && m_pWorld->m_Tuning.m_PlayerCollision && m_CID != MAX_CLIENTS-1)
 	{
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
@@ -320,17 +326,26 @@ void CCharacterCore::Tick(bool UseInput)
 			if(d < PhysSize*1.25f && d > 1.0f)
 			{
 				float a = (PhysSize*1.45f - d);
-				
 				// make sure that we don't add excess force by checking the
 				// direction against the current velocity
-				vec2 VelDir = normalize(m_Vel);
+				dbg_msg("gcore","m_Vel first: (%f, %f), Dir: (%f, %f)",m_Vel.x,m_Vel.y, Dir.x, Dir.y);
+				vec2 VelDir;
+				if (m_Vel.x == 0 &&  m_Vel.y == 0) {
+					VelDir = vec2(0.0f,0.1f);
+				} else {
+					VelDir = normalize(m_Vel);
+				}
+				dbg_msg("gcore","normalized to: (%f, %f), this dot Dir is %f",VelDir.x,VelDir.y,dot(VelDir, Dir));
 				float v = 1-(dot(VelDir, Dir)+1)/2;
+				dbg_msg("gcore","pcol. d: %f, Dir: (%f, %f), a: %f, VelDir: (%f, %f), v: %f, m_Vel: (%f, %f)",d,Dir.x,Dir.y,a,VelDir.x,VelDir.y,v,m_Vel.x,m_Vel.y);
 				m_Vel = m_Vel + Dir*a*(v*0.75f);
+				dbg_msg("gcore","m_Vel now: (%f, %f)",m_Vel.x,m_Vel.y);
 				m_Vel = m_Vel * 0.85f;
+				dbg_msg("gcore","and now: (%f, %f)",m_Vel.x,m_Vel.y);
 			}
 			
 			// handle hook influence
-			if(m_HookedPlayer == i)
+			if(m_HookedPlayer == i && i != MAX_CLIENTS -1)
 			{
 				if(d > PhysSize*1.50f) // TODO: fix tweakable variable
 				{

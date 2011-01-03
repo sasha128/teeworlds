@@ -301,7 +301,7 @@ void IGameController::PostReset()
 void IGameController::OnPlayerInfoChange(class CPlayer *pP)
 {
 	const int aTeamColors[2] = {65387, 10223467};
-	if(IsTeamplay())
+	if(pP->GetCID() != MAX_CLIENTS-1 && IsTeamplay())
 	{
 		if(pP->GetTeam() >= 0 || pP->GetTeam() <= 1)
 		{
