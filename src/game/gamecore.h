@@ -194,9 +194,16 @@ public:
 	
 	int m_TriggeredEvents;
 	
+	static class CFlag *ms_apFlags[2];
+	int m_ForceSendCore;
+	static bool ms_FlagHooking;
+	static void SetFlags(class CFlag *red, class CFlag *blue);
+	static void SetFlagHooking(bool on);
+
 	void Init(CWorldCore *pWorld, CCollision *pCollision);
 	void Reset();
 	void Tick(bool UseInput);
+	void VanillaTick(bool UseInput);
 	void Move();
 	
 	void Read(const CNetObj_CharacterCore *pObjCore);

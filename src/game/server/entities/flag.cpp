@@ -1,5 +1,6 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include <engine/shared/config.h>
 #include <game/server/gamecontext.h>
 #include "flag.h"
 
@@ -38,4 +39,30 @@ void CFlag::Snap(int SnappingClient)
 		pFlag->m_CarriedBy = -2;
 	else if(m_pCarryingCharacter && m_pCarryingCharacter->GetPlayer())
 		pFlag->m_CarriedBy = m_pCarryingCharacter->GetPlayer()->GetCID();
+}
+
+void CFlag::Tick()
+{
+	if (!m_pCarryingCharacter)
+	{
+		//if (!m_AtStand)
+		{
+			bool XHold = absolute<float>(m_Vel.x) < 0.0001f;
+			bool Grounded = false;
+
+			if(GameServer()->Collision()->CheckPoint(m_Pos.x+ms_PhysSize/2, m_Pos.y+ms_PhysSize/2+5))
+				Grounded = true;
+			if(GameServer()->Collision()->CheckPoint(m_Pos.x-ms_PhysSize/2, m_Pos.y+ms_PhysSize/2+5))
+				Grounded = true;
+			if (!XHold)
+				m_Vel.x *= (Grounded?g_Config.m_SvFlagFrictionGround:g_Config.m_SvFlagFrictionAir) / 100.0f;
+			m_Vel.y += GameServer()->m_World.m_Core.m_Tuning.m_Gravity;
+			GameServer()->Collision()->MoveBox(&m_Pos, &m_Vel, vec2(ms_PhysSize, ms_PhysSize), FLAGCOL_ELAST);
+		}
+	}
+	else if (m_pCarryingCharacter->IsAlive())
+	{
+		m_Pos = m_pCarryingCharacter->m_Pos;
+	}
+
 }

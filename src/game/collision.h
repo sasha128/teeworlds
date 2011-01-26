@@ -13,9 +13,10 @@ class CCollision
 	class CLayers *m_pLayers;
 
 	bool IsTileSolid(int x, int y);
-	int GetTile(int x, int y);
+
 
 public:
+	int GetTile(int x, int y);
 	enum
 	{
 		COLFLAG_SOLID=1,

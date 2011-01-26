@@ -9,6 +9,8 @@
 
 #include <game/gamecore.h>
 
+#include <game/server/gamemodes/ddmincommon.h>
+
 enum
 {
 	WEAPON_GAME = -3, // team switching etc
@@ -62,6 +64,12 @@ public:
 	bool IsAlive() const { return m_Alive; }
 	class CPlayer *GetPlayer() { return m_pPlayer; }
 	
+	bool Freeze(int NumTicks);
+	bool Unfreeze();
+
+	CCharacterCore *GetCore() { return &m_Core; }
+	vec2 GetInputDir();
+	bool KilledByWorld();
 private:
 	// player controlling this character
 	class CPlayer *m_pPlayer;
@@ -111,6 +119,9 @@ private:
 	int m_Health;
 	int m_Armor;
 
+	int m_RemainFrzTicks;
+	int m_LastFrozenAt;//will get updated on every REFREEZE_INTERVAL ticks
+
 	// ninja
 	struct
 	{
@@ -130,6 +141,7 @@ private:
 	CCharacterCore m_SendCore; // core that we should send
 	CCharacterCore m_ReckoningCore; // the dead reckoning core
 
+	bool m_WorldKill;
 };
 
 #endif

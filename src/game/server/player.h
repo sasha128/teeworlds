@@ -93,6 +93,8 @@ private:
 		int m_Min;
 		int m_Max;	
 	} m_Latency;
+public:
+	bool m_FlagDrop;
 };
 
 #endif

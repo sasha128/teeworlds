@@ -9,6 +9,7 @@
 #include <game/version.h>
 #include <game/collision.h>
 #include <game/gamecore.h>
+#include <game/server/chatcommands.h>
 #include "gamemodes/dm.h"
 #include "gamemodes/tdm.h"
 #include "gamemodes/ctf.h"
@@ -139,7 +140,7 @@ void CGameContext::CreateExplosion(vec2 p, int Owner, int Weapon, bool NoDamage)
 			l = 1-clamp((l-InnerRadius)/(Radius-InnerRadius), 0.0f, 1.0f);
 			float Dmg = 6 * l;
 			if((int)Dmg)
-				apEnts[i]->TakeDamage(ForceDir*Dmg*2, (int)Dmg, Owner, Weapon);
+				apEnts[i]->TakeDamage(ForceDir*Dmg*2, 0, Owner, Weapon);
 		}
 	}
 }
@@ -586,6 +587,7 @@ void CGameContext::OnMessage(int MsgId, CUnpacker *pUnpacker, int ClientId)
 			pMessage++;
 		}
 		
+		if (!CChatCommands::HandleMessage(p, pMsg->m_pMessage))
 		SendChat(ClientId, Team, pMsg->m_pMessage);
 	}
 	else if(MsgId == NETMSGTYPE_CL_CALLVOTE)

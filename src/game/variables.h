@@ -58,9 +58,9 @@ MACRO_CONFIG_INT(SvTeamdamage, sv_teamdamage, 0, 0, 1, CFGFLAG_SERVER, "Team dam
 MACRO_CONFIG_STR(SvMaprotation, sv_maprotation, 768, "", CFGFLAG_SERVER, "Maps to rotate between")
 MACRO_CONFIG_INT(SvRoundsPerMap, sv_rounds_per_map, 1, 1, 100, CFGFLAG_SERVER, "Number of rounds on each map before rotating")
 MACRO_CONFIG_INT(SvPowerups, sv_powerups, 1, 0, 1, CFGFLAG_SERVER, "Allow powerups like ninja")
-MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 20, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
+MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 3, 0, 1000, CFGFLAG_SERVER, "Score limit (0 disables)")
 MACRO_CONFIG_INT(SvTimelimit, sv_timelimit, 0, 0, 1000, CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
-MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dm", CFGFLAG_SERVER, "Game type (dm, tdm, ctf)")
+MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "mod", CFGFLAG_SERVER, "Game type (dm, tdm, ctf)")
 MACRO_CONFIG_INT(SvTournamentMode, sv_tournament_mode, 0, 0, 1, CFGFLAG_SERVER, "Tournament mode. When enabled, players joins the server as spectator")
 MACRO_CONFIG_INT(SvSpamprotection, sv_spamprotection, 1, 0, 1, CFGFLAG_SERVER, "Spam protection")
 
@@ -71,6 +71,15 @@ MACRO_CONFIG_INT(SvInactiveKick, sv_inactivekick, 1, 0, 2, CFGFLAG_SERVER, "How 
 
 MACRO_CONFIG_INT(SvVoteKick, sv_vote_kick, 1, 0, 1, CFGFLAG_SERVER, "Allow voting to kick players")
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
+
+MACRO_CONFIG_INT(SvFlagDropCooldown, sv_flag_drop_cooldown, 50, 10, 500, CFGFLAG_SERVER, "The time (in ticks) a player cannot re-grab the/a new flag, after dropping one.")
+MACRO_CONFIG_INT(SvGrabRadDecr, sv_grab_rad_decr, 5, 0, 27, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFlagDropVel, sv_flag_drop_vel, 10, 0, 10000, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFlagFrictionGround, sv_flag_friction_ground, 50, 0, 100, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFlagFrictionAir, sv_flag_friction_air, 100, 0, 100, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFlagHammer, sv_flag_hammer, 1, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFlagHook, sv_flag_hook, 1, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvFreezeTime, sv_freeze_time, 3, 0, 10, CFGFLAG_SERVER, "")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

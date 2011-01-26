@@ -45,10 +45,12 @@ void CCollision::Init(class CLayers *pLayers)
 		case TILE_NOHOOK:
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
-		default:
-			m_pTiles[i].m_Index = 0;
 		}
+
+		if (Index >= TILE_CUSTOM_END)
+			m_pTiles[i].m_Index = 0;
 	}
+
 }
 
 int CCollision::GetTile(int x, int y)
@@ -56,12 +58,13 @@ int CCollision::GetTile(int x, int y)
 	int nx = clamp(x/32, 0, m_Width-1);
 	int ny = clamp(y/32, 0, m_Height-1);
 	
-	return m_pTiles[ny*m_Width+nx].m_Index > 128 ? 0 : m_pTiles[ny*m_Width+nx].m_Index;
+	return m_pTiles[ny*m_Width+nx].m_Index > TILE_CUSTOM_END ? 0 : m_pTiles[ny*m_Width+nx].m_Index;
 }
 
 bool CCollision::IsTileSolid(int x, int y)
 {
-	return GetTile(x,y)&COLFLAG_SOLID;
+	int i = GetTile(x,y);
+	return (i&COLFLAG_SOLID) && (i<=5);
 }
 
 // TODO: rewrite this smarter!
