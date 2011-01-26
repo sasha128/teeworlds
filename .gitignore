@@ -18,3 +18,9 @@ teeworlds*
 teeworlds_srv*
 tileset_borderfix*
 versionsrv*
+
+src/tags
+*.vim
+*.swp
+*.orig
+*.bak
