@@ -51,6 +51,9 @@ void CCollision::Init(class CLayers *pLayers)
 		default:
 			m_pTiles[i].m_Index = 0;
 		}
+
+		if (Index >= TILE_HILL_FIRST && Index <= TILE_HILL_LAST)
+			m_pTiles[i].m_Index = Index;
 	}
 }
 

@@ -629,7 +629,7 @@ void CMenus::RenderLoading(float Percent)
 	Graphics()->QuadsEnd();
 
 
-	const char *pCaption = Localize("Loading");
+	const char *pCaption = Localize("Loading KotH client");
 
 	tw = TextRender()->TextWidth(0, 48.0f, pCaption, -1);
 	CUIRect r;

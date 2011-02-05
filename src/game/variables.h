@@ -77,6 +77,35 @@ MACRO_CONFIG_INT(SvInactiveKick, sv_inactivekick, 1, 0, 2, CFGFLAG_SERVER, "How 
 MACRO_CONFIG_INT(SvVoteKick, sv_vote_kick, 1, 0, 1, CFGFLAG_SERVER, "Allow voting to kick players")
 MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time to ban a player if kicked by vote. 0 makes it just use kick")
 
+MACRO_CONFIG_INT(SvAcquireDelay, sv_acquire_delay, 10, 0, 600, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvLoseDelay, sv_lose_delay, 10, 0, 600, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvBroadcastInterval, sv_broadcast_interval, 50, 1, 500, CFGFLAG_SERVER, "in ticks, not seconds")
+MACRO_CONFIG_INT(SvMaxKingsPerHill, sv_max_kings_per_hill, 1, 0, 16, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvEarlyLose, sv_early_lose, 0, 0, 1, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvEarlyScore, sv_early_score, 1, 0, 1, CFGFLAG_SERVER, "")
+
+MACRO_CONFIG_INT(SvEyesOwn, sv_eyes_own, 3, -1, 5, CFGFLAG_SERVER, "");
+MACRO_CONFIG_INT(SvEyesCannotAcquire, sv_eyes_cannot_acquire, 1, -1, 5, CFGFLAG_SERVER, "");
+
+MACRO_CONFIG_INT(SvEmoticonAcquire, sv_emoticon_acquire, 1, -1, 15, CFGFLAG_SERVER, "");
+MACRO_CONFIG_INT(SvEmoticonLose, sv_emoticon_lose, 3, -1, 15, CFGFLAG_SERVER, "");
+
+MACRO_CONFIG_INT(SvScoreInterval, sv_score_interval, 10, 1, 600, CFGFLAG_SERVER, "")
+
+MACRO_CONFIG_INT(SvScoreHillA, sv_score_hill_a, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillB, sv_score_hill_b, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillC, sv_score_hill_c, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillD, sv_score_hill_d, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillE, sv_score_hill_e, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillF, sv_score_hill_f, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillG, sv_score_hill_g, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillH, sv_score_hill_h, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillI, sv_score_hill_i, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillJ, sv_score_hill_j, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillK, sv_score_hill_k, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillL, sv_score_hill_l, 1, 1, 10, CFGFLAG_SERVER, "")
+MACRO_CONFIG_INT(SvScoreHillM, sv_score_hill_m, 1, 1, 10, CFGFLAG_SERVER, "")
+
 MACRO_CONFIG_INT(SvDamage, sv_damage, 0, 0, 1, CFGFLAG_SERVER, "allow damage")
 MACRO_CONFIG_INT(SvNinja, sv_ninja, 0, 0, 1, CFGFLAG_SERVER, "allow ninja")
 MACRO_CONFIG_INT(SvUnlimitedAmmo, sv_unlimited_ammo, 1, 0, 1, CFGFLAG_SERVER, "guess what")

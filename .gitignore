@@ -18,3 +18,11 @@ teeworlds*
 teeworlds_srv*
 tileset_borderfix*
 versionsrv*
+
+*.vim
+*.orig
+*.rej
+*.swp
+*.map
+tags
+*.cfg
