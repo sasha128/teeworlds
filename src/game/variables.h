@@ -81,6 +81,8 @@ MACRO_CONFIG_INT(SvDamage, sv_damage, 0, 0, 1, CFGFLAG_SERVER, "allow damage")
 MACRO_CONFIG_INT(SvNinja, sv_ninja, 0, 0, 1, CFGFLAG_SERVER, "allow ninja")
 MACRO_CONFIG_INT(SvUnlimitedAmmo, sv_unlimited_ammo, 1, 0, 1, CFGFLAG_SERVER, "guess what")
 
+MACRO_CONFIG_INT(SvEmoticonDelay, sv_emoticon_delay, 3, 0, 10, CFGFLAG_SERVER, "")
+
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
 	MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, 15, CFGFLAG_SERVER, "")
