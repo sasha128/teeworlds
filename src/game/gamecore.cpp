@@ -326,22 +326,15 @@ void CCharacterCore::Tick(bool UseInput)
 			if(d < PhysSize*1.25f && d > 1.0f)
 			{
 				float a = (PhysSize*1.45f - d);
+				float v = 0.5f;
+
 				// make sure that we don't add excess force by checking the
-				// direction against the current velocity
-				dbg_msg("gcore","m_Vel first: (%f, %f), Dir: (%f, %f)",m_Vel.x,m_Vel.y, Dir.x, Dir.y);
-				vec2 VelDir;
-				if (m_Vel.x == 0 &&  m_Vel.y == 0) {
-					VelDir = vec2(0.0f,0.1f);
-				} else {
-					VelDir = normalize(m_Vel);
-				}
-				dbg_msg("gcore","normalized to: (%f, %f), this dot Dir is %f",VelDir.x,VelDir.y,dot(VelDir, Dir));
-				float v = 1-(dot(VelDir, Dir)+1)/2;
-				dbg_msg("gcore","pcol. d: %f, Dir: (%f, %f), a: %f, VelDir: (%f, %f), v: %f, m_Vel: (%f, %f)",d,Dir.x,Dir.y,a,VelDir.x,VelDir.y,v,m_Vel.x,m_Vel.y);
-				m_Vel = m_Vel + Dir*a*(v*0.75f);
-				dbg_msg("gcore","m_Vel now: (%f, %f)",m_Vel.x,m_Vel.y);
-				m_Vel = m_Vel * 0.85f;
-				dbg_msg("gcore","and now: (%f, %f)",m_Vel.x,m_Vel.y);
+				// direction against the current velocity. if not zero.
+				if (length(m_Vel) > 0.0001)
+					v = 1-(dot(normalize(m_Vel), Dir)+1)/2;
+
+				m_Vel += Dir*a*(v*0.75f);
+				m_Vel *= 0.85f;
 			}
 			
 			// handle hook influence

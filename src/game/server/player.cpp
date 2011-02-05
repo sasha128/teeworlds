@@ -1,6 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
 #include <new>
+#include <engine/shared/config.h>
 #include "player.h"
 
 
@@ -133,10 +134,10 @@ void CPlayer::OnDirectInput(CNetObj_PlayerInput *NewInput)
 	if(Character)
 		Character->OnDirectInput(NewInput);
 
-	if(!Character && m_Team >= 0 && (NewInput->m_Fire&1))
+	if(!Character && m_Team != TEAM_SPECTATORS && (NewInput->m_Fire&1))
 		m_Spawning = true;
 	
-	if(!Character && m_Team == -1)
+	if(!Character && m_Team == TEAM_SPECTATORS)
 		m_ViewPos = vec2(NewInput->m_TargetX, NewInput->m_TargetY);
 
 	// check for activity
@@ -211,7 +212,7 @@ void CPlayer::TryRespawn()
 
 	// check if the position is occupado
 	CEntity *apEnts[2] = {0};
-	int NumEnts = GameServer()->m_World.FindEntities(SpawnPos, 64, apEnts, 2, NETOBJTYPE_CHARACTER);
+	int NumEnts = GameServer()->m_World.FindEntities(SpawnPos, 64, apEnts, 2, CGameWorld::ENTTYPE_CHARACTER);
 	
 	if(NumEnts == 0)
 	{

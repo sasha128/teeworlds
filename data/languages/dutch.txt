@@ -1,4 +1,3 @@
-
 ##### translated strings #####
 
 %d of %d servers, %d players
@@ -9,6 +8,19 @@
 
 %ds left
 == %ds over
+
+%i minute left
+== nog %i minuut
+
+%i minutes left
+== nog %i minuten
+
+%i second left
+== nog %i seconde
+
+%i seconds left
+== nog %i seconden
+
 
 %s Right click for context menu.
 == %s Rechtermuisknop voor context menu.
@@ -75,6 +87,12 @@ As this is the first time you launch the game, please enter your nick name below
 
 Aspect ratio
 == Beeldverhouding
+
+Automatically record demos
+== Automatisch demo's opnemen
+
+Automatically take game over screenshot
+== Automatisch schermafbeeldingen nemen
 
 Blue team
 == Blauwe team
@@ -448,6 +466,12 @@ Make external
 Map
 == Kaart
 
+Max Screenshots
+== Maximaal aantal schermafbeeldingen
+
+Max demos
+== Maximaal aantal demo's
+
 Maximum ping:
 == Hoogste ping:
 
@@ -467,13 +491,16 @@ Movement
 == Bewegen
 
 Mute when not active
-== Demp, waneer niet actief
+== Dempen wanneer inactief
 
 Name
 == Naam
 
 Name:
 == Naam:
+
+Name plates size
+== Grootte naamplaat
 
 New
 == Nieuw
@@ -596,7 +623,7 @@ Quick search:
 == Snel zoeken:
 
 Quit
-== Stoppen
+== Afsluiten
 
 REC
 == REC
@@ -707,7 +734,7 @@ Scoreboard
 == Scorebord
 
 Screenshot
-== Screenshot
+== Schermafbeelding
 
 Select group. Right click for properties.
 == Kies een groep. Rechtermuisknop voor eigenschappen.
@@ -750,6 +777,9 @@ Skins
 
 Sound
 == Geluid
+
+Sound error
+== Geluidsfout 
 
 Sound volume
 == Volume
@@ -799,6 +829,9 @@ Teeworlds %s is out! Download it at www.teeworlds.com!
 Texture Compression
 == Structuurscompressie
 
+The audio device couldn't be initialised.
+== Het geluid kon niet worden geladen.
+
 The server is running a non-standard tuning on a pure game type.
 == The server draait geen standaard spel type.
 
@@ -828,6 +861,9 @@ Type
 
 UI Color
 == UI kleur
+
+Unable to delete the demo
+== Demo kon niet worden verwijderd
 
 Up
 == Omhoog
@@ -931,37 +967,10 @@ ZO
 [ctrl+p] Toggles proof borders. These borders represent what a player maximum can see.
 == [ctrl+p] Test grenzen. Deze grenzen laten zien wat een speler maximaal kan zien.
 
-##### needs translation #####
-
-Automatically record demos
-== 
-
-Automatically take game over screenshot
-== 
-
-Max Screenshots
-== 
-
-Max demos
-== 
-
-left
-== 
-
-minute
-== 
-
-minutes
-== 
-
 no limit
-== 
+== ongelimiteerd
 
-second
-== 
-
-seconds
-== 
+##### needs translation #####
 
 ##### old translations #####
 
