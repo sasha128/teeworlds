@@ -935,8 +935,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 	else if (MsgID == NETMSGTYPE_CL_EMOTICON && !m_World.m_Paused)
 	{
 		CNetMsg_Cl_Emoticon *pMsg = (CNetMsg_Cl_Emoticon *)pRawMsg;
-
-		if(g_Config.m_SvSpamprotection && pPlayer->m_LastEmote && pPlayer->m_LastEmote+Server()->TickSpeed()*3 > Server()->Tick())
+		
+		if(g_Config.m_SvSpamprotection && g_Config.m_SvEmoticonDelay && pPlayer->m_LastEmote && pPlayer->m_LastEmote+Server()->TickSpeed()*g_Config.m_SvEmoticonDelay > Server()->Tick())
 			return;
 
 		pPlayer->m_LastEmote = Server()->Tick();
