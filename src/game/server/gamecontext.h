@@ -13,6 +13,7 @@
 #include "eventhandler.h"
 #include "gamecontroller.h"
 #include "gameworld.h"
+#include "account.h"
 #include "player.h"
 
 #include "score.h"
@@ -166,6 +167,7 @@ public:
 	virtual const char *GameType();
 	virtual const char *Version();
 	virtual const char *NetVersion();
+	virtual const char *AccVersion();
 
 	// DDRace
 
@@ -239,6 +241,8 @@ private:
 	static void ConUnmute(IConsole::IResult *pResult, void *pUserData, int ClientID);
 	static void ConMutes(IConsole::IResult *pResult, void *pUserData, int ClientID);
 
+	static void ConLogin(IConsole::IResult *pResult, void *pUserData, int ClientID);
+	static void ConRegister(IConsole::IResult *pResult, void *pUserData, int ClientID);
 	enum
 	{
 		MAX_MUTES=32,

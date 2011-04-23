@@ -93,6 +93,7 @@ public:
 	virtual const char *GameType() = 0;
 	virtual const char *Version() = 0;
 	virtual const char *NetVersion() = 0;
+	virtual const char *AccVersion() = 0;
 
 	// DDRace
 

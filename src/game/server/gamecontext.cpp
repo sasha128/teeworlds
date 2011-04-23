@@ -660,7 +660,7 @@ void CGameContext::OnClientEnter(int ClientID)
 void CGameContext::OnClientConnected(int ClientID)
 {
 	// Check which team the player should be on
-	const int StartTeam = g_Config.m_SvTournamentMode ? TEAM_SPECTATORS : m_pController->GetAutoTeam(ClientID);
+	const int StartTeam = (g_Config.m_SvTournamentMode || (g_Config.m_SvAccEnable && g_Config.m_SvAccEnforce)) ? TEAM_SPECTATORS : m_pController->GetAutoTeam(ClientID);
 
 	m_apPlayers[ClientID] = new(ClientID) CPlayer(this, ClientID, StartTeam);
 	//players[client_id].init(client_id);
@@ -689,6 +689,14 @@ void CGameContext::OnClientConnected(int ClientID)
 void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 {
 	AbortVoteKickOnDisconnect(ClientID);
+
+	if (m_apPlayers[ClientID]->GetAccount())
+	{
+		if (g_Config.m_SvAccEnable && g_Config.m_SvAccAutoSave)
+			m_apPlayers[ClientID]->GetAccount()->Write();
+		delete m_apPlayers[ClientID]->GetAccount();
+	}
+
 	m_apPlayers[ClientID]->OnDisconnect(pReason);
 	delete m_apPlayers[ClientID];
 	m_apPlayers[ClientID] = 0;
@@ -991,8 +999,14 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		if(pPlayer->GetTeam() == pMsg->m_Team || (g_Config.m_SvSpamprotection && pPlayer->m_LastSetTeam && pPlayer->m_LastSetTeam + Server()->TickSpeed() * g_Config.m_SvTeamChangeDelay > Server()->Tick()))
 			return;
 
+		char aBuf[128];
 		// Switch team on given client and kill/respawn him
-		if(m_pController->CanJoinTeam(pMsg->m_Team, ClientID))
+		if (g_Config.m_SvAccEnable && g_Config.m_SvAccEnforce && !pPlayer->GetAccount())
+		{
+			str_copy(aBuf, "You have to log in or register. Say /login or /reg ", sizeof aBuf);
+			SendBroadcast(aBuf, ClientID);
+		}
+		else if(m_pController->CanJoinTeam(pMsg->m_Team, ClientID))
 		{
 			//if(m_pController->CanChangeTeam(pPlayer, pMsg->m_Team))
 
@@ -1010,7 +1024,6 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		}
 		else
 		{
-			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "Only %d active players are allowed", g_Config.m_SvMaxClients-g_Config.m_SvSpectatorSlots);
 			SendBroadcast(aBuf, ClientID);
 		}
@@ -1075,8 +1088,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		CNetMsg_Cl_StartInfo *pMsg = (CNetMsg_Cl_StartInfo *)pRawMsg;
 		pPlayer->m_LastChangeInfo = Server()->Tick();
 
+		str_copy(pPlayer->m_OrigName, pMsg->m_pName, sizeof pPlayer->m_OrigName);
 		// set start infos
-		Server()->SetClientName(ClientID, pMsg->m_pName);
+		char aNewName[MAX_NAME_LENGTH];
+		if (g_Config.m_SvAccEnable)
+			CAccount::OverrideName(aNewName, sizeof aNewName, pPlayer, pMsg->m_pName);
+		else
+			str_copy(aNewName, pMsg->m_pName, sizeof aNewName);
+			
+		Server()->SetClientName(ClientID, aNewName);
 		Server()->SetClientClan(ClientID, pMsg->m_pClan);
 		Server()->SetClientCountry(ClientID, pMsg->m_Country);
 		str_copy(pPlayer->m_TeeInfos.m_SkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_SkinName));
@@ -1176,7 +1196,15 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		// set infos
 		char aOldName[MAX_NAME_LENGTH];
 		str_copy(aOldName, Server()->ClientName(ClientID), sizeof(aOldName));
-		Server()->SetClientName(ClientID, pMsg->m_pName);
+
+		str_copy(pPlayer->m_OrigName, pMsg->m_pName, sizeof pPlayer->m_OrigName);
+		char aNewName[MAX_NAME_LENGTH];
+		if (g_Config.m_SvAccEnable)
+			CAccount::OverrideName(aNewName, sizeof aNewName, pPlayer, pMsg->m_pName);
+		else
+			str_copy(aNewName, pMsg->m_pName, sizeof aNewName);
+
+		Server()->SetClientName(ClientID, aNewName);
 		if(str_comp(aOldName, Server()->ClientName(ClientID)) != 0)
 		{
 			char aChatText[256];
@@ -1790,6 +1818,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 		}
 	}
 #endif
+ 	CAccount::Init(AccVersion());
 }
 
 void CGameContext::OnShutdown()
@@ -1832,6 +1861,7 @@ bool CGameContext::IsClientPlayer(int ClientID)
 const char *CGameContext::GameType() { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
 const char *CGameContext::Version() { return GAME_VERSION; }
 const char *CGameContext::NetVersion() { return GAME_NETVERSION; }
+const char *CGameContext::AccVersion() { return GAME_ACCVERSION_HASH; }
 
 IGameServer *CreateGameServer() { return new CGameContext; }
 

@@ -834,3 +834,117 @@ void CGameContext::ConMutes(IConsole::IResult *pResult, void *pUserData, int Cli
 		pResult->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mutes", aBuf);
 	}
 }
+
+void CGameContext::ConLogin(IConsole::IResult *pResult, void *pUserData, int ClientID)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	const char *pName = pResult->GetString(0);
+	const char *pPass = pResult->GetString(1);
+	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
+	char aBuf[256];
+	CAccount *pAcc;
+	bool PassFailed = false;
+	if (!g_Config.m_SvAccEnable)
+		str_copy(aBuf, "Account system is disabled.", sizeof aBuf);
+	else if (pPlayer->GetAccount())
+		str_copy(aBuf, "You are already logged in.", sizeof aBuf);
+	else if (!CAccount::IsValidAccName(pName) || !(pAcc = new CAccount(pName))->Read() || (PassFailed = !pAcc->VerifyPass(pPass)))
+	{
+		str_copy(aBuf, "Failed to login, wrong accdata version, unknown account or password.", sizeof aBuf);
+		if (PassFailed)
+		{
+			int FailInd = pAcc->Head()->m_FailCount?1:0;
+
+			pAcc->Head()->m_FailCount++;
+			char aIP[16];
+			pSelf->Server()->GetClientAddr(pPlayer->GetCID(), aIP, sizeof aIP);
+			str_copy(pAcc->Head()->m_FailIP[FailInd], aIP, sizeof (pAcc->Head()->m_FailIP[FailInd]));
+			pAcc->Head()->m_FailDate[FailInd] = time_timestamp();
+			pAcc->Write();
+		}
+	}
+	else
+	{
+		char aTmp[128];
+		if (pAcc->Head()->m_FailCount > 0)
+		{
+			char aTime[2][32];
+			str_timestamp_at(aTime[0], sizeof (aTime[0]), pAcc->Head()->m_FailDate[0]);
+			if (pAcc->Head()->m_FailCount > 1)
+			{
+				str_timestamp_at(aTime[1], sizeof (aTime[1]), pAcc->Head()->m_FailDate[1]);
+				str_format(aTmp, sizeof aTmp, "%d failed logins since last login. first: %s at %s, last: %s at %s",
+						pAcc->Head()->m_FailCount, pAcc->Head()->m_FailIP[0], aTime[0], pAcc->Head()->m_FailIP[1], aTime[1]);
+			}
+			else
+			{
+				str_format(aTmp, sizeof aTmp, "One failed login since last login: %s at %s",
+					pAcc->Head()->m_FailIP[0], aTime[0]);
+			}
+			pAcc->Head()->m_FailCount = 0;
+			pAcc->Head()->m_FailIP[0][0] = pAcc->Head()->m_FailIP[1][0] = '\0';
+			pResult->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", aTmp);
+		}
+
+		str_timestamp_at(aTmp, sizeof aTmp, pAcc->Head()->m_LastLoginDate);
+		str_format(aBuf, sizeof aBuf, "Login successful. Last login from %s at %s.", pAcc->Head()->m_LastLoginIP, aTmp);
+
+		pAcc->Head()->m_LastLoginDate = time_timestamp();
+		pSelf->Server()->GetClientAddr(pPlayer->GetCID(), pAcc->Head()->m_LastLoginIP, sizeof (pAcc->Head()->m_LastLoginIP));
+
+		pAcc->Write();
+
+		pPlayer->SetAccount(pAcc);
+		char aName[MAX_NAME_LENGTH];
+		CAccount::OverrideName(aName, sizeof aName, pPlayer, pPlayer->m_OrigName);
+		pSelf->Server()->SetClientName(pPlayer->GetCID(), aName);
+		if (!g_Config.m_SvTournamentMode)
+			pPlayer->SetTeam(0);
+
+		pAcc = NULL;
+	}
+
+	pResult->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", aBuf);
+	if (pAcc)
+		delete pAcc;
+
+}
+
+void CGameContext::ConRegister(IConsole::IResult *pResult, void *pUserData, int ClientID)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	const char *pName = pResult->GetString(0);
+	const char *pPass = pResult->GetString(1);
+	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
+	char aBuf[256];
+	CAccount *pAcc;
+
+	if (!g_Config.m_SvAccEnable)
+		str_copy(aBuf, "Account system is disabled.", sizeof aBuf);
+	else if (pPlayer->GetAccount())
+		str_copy(aBuf, "You cannot create a new account while being logged in.", sizeof aBuf);
+	else if (str_find(pPass," "))
+		str_copy(aBuf, "The password must not contain any spaces.", sizeof aBuf);
+	else if (!CAccount::IsValidAccName(pName))
+		str_format(aBuf, sizeof aBuf, "Illegal account name. Allowed characters are: %s", g_Config.m_SvAccAllowedNameChars);
+	else if ((pAcc = new CAccount(pName))->Read())
+		str_copy(aBuf, "An account with this name does already exist. Choose a different name.", sizeof aBuf);
+	else if (!pAcc->SetPass(pPass) || !pAcc->Write())
+		str_copy(aBuf, "Account creation failed. Sorry.", sizeof aBuf);
+	else
+	{
+		str_copy(aBuf, "Account successfully created, logged in. Do not forget your password, there is no way to get it back if lost.", sizeof aBuf);
+		pPlayer->SetAccount(pAcc);
+		char aName[MAX_NAME_LENGTH];
+		CAccount::OverrideName(aName, sizeof aName, pPlayer, pPlayer->m_OrigName);
+		pSelf->Server()->SetClientName(pPlayer->GetCID(), aName);
+		if (!g_Config.m_SvTournamentMode)
+			pPlayer->SetTeam(0);
+		pAcc = NULL;
+	}
+
+	if (pAcc)
+		delete pAcc;
+
+	pResult->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info", aBuf);
+}

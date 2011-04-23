@@ -83,6 +83,15 @@ MACRO_CONFIG_STR(SvRconPassword, sv_rcon_password, 32, "", CFGFLAG_SERVER, "Remo
 MACRO_CONFIG_INT(SvRconMaxTries, sv_rcon_max_tries, 20, 0, 100, CFGFLAG_SERVER, "Maximum number of tries for remote console authentication", IConsole::CONSOLELEVEL_ADMIN)
 MACRO_CONFIG_INT(SvRconBantime, sv_rcon_bantime, 5, 0, 1440, CFGFLAG_SERVER, "The time a client gets banned if remote console authentication fails. 0 makes it just use kick", IConsole::CONSOLELEVEL_ADMIN)
 
+MACRO_CONFIG_INT(SvAccEnable, sv_acc_enable, 1, 0, 1, CFGFLAG_SERVER, "globally allow/disallow login/register", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_STR(SvAccDir, sv_acc_dir, 256, "accounts", CFGFLAG_SERVER, "directory to store accounts in", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_STR(SvAccAllowedNameChars, sv_acc_allowed_name_chars, 256, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_=+!@()[]{}|.", CFGFLAG_SERVER, "valid chars in acc names i.e. file names", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_INT(SvAccEnforce, sv_acc_enforce, 0, 0, 1, CFGFLAG_SERVER, "force players which are not logged in into spectator-only mode", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_INT(SvAccEnforceNames, sv_acc_enforce_names, 0, 0, 1, CFGFLAG_SERVER, "force player names to equal their account names", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_STR(SvAccMemberPrefix, sv_acc_member_prefix, 32, "", CFGFLAG_SERVER, "name prefix for logged-in players", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_STR(SvAccGuestPrefix, sv_acc_guest_prefix, 32, "", CFGFLAG_SERVER, "name prefix for guests", IConsole::CONSOLELEVEL_ADMIN)
+MACRO_CONFIG_INT(SvAccAutoSave, sv_acc_auto_save, 1, 0, 1, CFGFLAG_SERVER, "save account on player disconnect?", IConsole::CONSOLELEVEL_ADMIN)
+
 MACRO_CONFIG_INT(Debug, debug, 0, 0, 1, CFGFLAG_CLIENT|CFGFLAG_SERVER, "Debug mode", IConsole::CONSOLELEVEL_ADMIN)
 MACRO_CONFIG_INT(DbgStress, dbg_stress, 0, 0, 0, CFGFLAG_CLIENT|CFGFLAG_SERVER, "Stress systems", IConsole::CONSOLELEVEL_ADMIN)
 MACRO_CONFIG_INT(DbgStressNetwork, dbg_stress_network, 0, 0, 0, CFGFLAG_CLIENT|CFGFLAG_SERVER, "Stress network", IConsole::CONSOLELEVEL_ADMIN)
