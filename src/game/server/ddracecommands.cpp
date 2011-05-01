@@ -842,7 +842,7 @@ void CGameContext::ConLogin(IConsole::IResult *pResult, void *pUserData, int Cli
 	const char *pPass = pResult->GetString(1);
 	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
 	char aBuf[256];
-	CAccount *pAcc;
+	CAccount *pAcc = 0;
 	bool PassFailed = false;
 	if (!g_Config.m_SvAccEnable)
 		str_copy(aBuf, "Account system is disabled.", sizeof aBuf);
@@ -917,7 +917,7 @@ void CGameContext::ConRegister(IConsole::IResult *pResult, void *pUserData, int 
 	const char *pPass = pResult->GetString(1);
 	CPlayer *pPlayer = pSelf->m_apPlayers[ClientID];
 	char aBuf[256];
-	CAccount *pAcc;
+	CAccount *pAcc = 0;
 
 	if (!g_Config.m_SvAccEnable)
 		str_copy(aBuf, "Account system is disabled.", sizeof aBuf);
