@@ -72,7 +72,7 @@ void CCharacterCore::Reset()
 	m_HookedPlayer = -1;
 	m_Jumped = 0;
 	m_TriggeredEvents = 0;
-	m_Frozen = 0;
+	m_BodyHeat = BODYHEAT_FREEZE + 1;
 }
 
 void CCharacterCore::Tick(bool UseInput)
@@ -90,11 +90,19 @@ void CCharacterCore::Tick(bool UseInput)
 	int Frz = m_pCollision->CheckPointFrz(m_Pos.x, m_Pos.y);
 
 	if (Frz == 1)
-		m_Frozen = m_pWorld->m_Tuning.m_FreezeTicks;
+	{
+		if ((m_BodyHeat -= 200) < 0)
+			m_BodyHeat = 0;
+	}
 	else if (Frz == 2)
-		m_Frozen = 0;
-	else if (m_Frozen > 0)
-		m_Frozen--;
+		m_BodyHeat = MAX_BODYHEAT;
+	else if (m_BodyHeat < MAX_BODYHEAT)
+	{
+		int fh = m_BodyHeat;
+		int sc = ((MAX_BODYHEAT - m_BodyHeat) / 2000) + 1;
+		m_BodyHeat += (sc*sc);
+		dbg_msg("gc", "%d ---+%d---> %d", fh, m_BodyHeat-fh, m_BodyHeat);
+	}
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
 
@@ -165,8 +173,10 @@ void CCharacterCore::Tick(bool UseInput)
 			m_HookPos = m_Pos;
 		}
 	}
+
+	bool Frozen = m_BodyHeat < BODYHEAT_FREEZE;
 	
-	if (m_Frozen > 0)
+	if (Frozen)
 	{
 		m_Jumped &= ~1;
 		m_HookedPlayer = -1;
@@ -177,11 +187,11 @@ void CCharacterCore::Tick(bool UseInput)
 	}
 
 	// add the speed modification according to players wanted direction
-	if(!m_Frozen && m_Direction < 0)
+	if(!Frozen && m_Direction < 0)
 		m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, -Accel);
-	if(!m_Frozen && m_Direction > 0)
+	if(!Frozen && m_Direction > 0)
 		m_Vel.x = SaturatedAdd(-MaxSpeed, MaxSpeed, m_Vel.x, Accel);
-	if(m_Frozen || m_Direction == 0)
+	if(Frozen || m_Direction == 0)
 		m_Vel.x *= Friction;
 
 	// handle jumping
@@ -437,7 +447,7 @@ void CCharacterCore::Write(CNetObj_CharacterCore *pObjCore, bool VanillaOnly)
 	pObjCore->m_Direction = m_Direction;
 	pObjCore->m_Angle = m_Angle;
 	if (!VanillaOnly)
-		pObjCore->m_Frz = m_Frozen;
+		pObjCore->m_Heat = m_BodyHeat;
 }
 
 void CCharacterCore::Read(const CNetObj_CharacterCore *pObjCore)
@@ -456,7 +466,7 @@ void CCharacterCore::Read(const CNetObj_CharacterCore *pObjCore)
 	m_Jumped = pObjCore->m_Jumped;
 	m_Direction = pObjCore->m_Direction;
 	m_Angle = pObjCore->m_Angle;
-	m_Frozen = pObjCore->m_Frz;
+	m_BodyHeat = pObjCore->m_Heat;
 }
 
 void CCharacterCore::Quantize()

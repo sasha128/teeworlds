@@ -76,6 +76,8 @@ bool CCharacter::Spawn(CPlayer *pPlayer, vec2 Pos)
 	m_Alive = true;
 
 	GameServer()->m_pController->OnCharacterSpawn(this);
+	
+	m_LastTickHeat = -1;
 
 	return true;
 }
@@ -314,7 +316,8 @@ void CCharacter::FireWeapon()
 				pTarget->TakeDamage(vec2(0.f, -1.f) + normalize(Dir + vec2(0.f, -1.1f)) * 10.0f, g_pData->m_Weapons.m_Hammer.m_pBase->m_Damage,
 					m_pPlayer->GetCID(), m_ActiveWeapon);
 
-				pTarget->m_Core.m_Frozen = 0;
+				if (pTarget->m_Core.m_BodyHeat < BODYHEAT_FREEZE)
+					pTarget->m_Core.m_BodyHeat = clamp(pTarget->m_Core.m_BodyHeat + g_Config.m_SvHammerHeat, 0, MAX_BODYHEAT);
 
 				Hits++;
 			}
@@ -559,20 +562,32 @@ void CCharacter::Tick()
 
 	m_Core.m_Input = m_Input;
 	m_Core.Tick(true);
-	
-	if (m_Core.m_Frozen)
+	if (m_LastTickHeat == -1)
+		m_LastTickHeat = m_Core.m_BodyHeat;
+
+	bool Freezing = m_LastTickHeat > m_Core.m_BodyHeat;
+
+	IncreaseArmor((m_Core.m_BodyHeat * 10) / MAX_BODYHEAT - m_Armor);
+	if (m_Core.m_BodyHeat < BODYHEAT_FREEZE)
 	{
 		if (m_ActiveWeapon != WEAPON_NINJA)
 			GiveNinja(true);
 		else if (m_Ninja.m_ActivationTick + 5 * Server()->TickSpeed() < Server()->Tick())
 			m_Ninja.m_ActivationTick = Server()->Tick(); // this should fix the end-of-ninja missprediction bug
 
-		if ((m_Core.m_Frozen+1) % Server()->TickSpeed() == 0)
-			GameServer()->CreateDamageInd(m_Pos, 0, (m_Core.m_Frozen+1) / Server()->TickSpeed());
+		//if (!Freezing && (m_Core.m_BodyHeat+1) % Server()->TickSpeed() == 0)
+		//	GameServer()->CreateDamageInd(m_Pos, 0, (m_Core.m_BodyHeat+1) / Server()->TickSpeed());
 	}
-	else if (m_ActiveWeapon == WEAPON_NINJA)
-		TakeNinja();
+	else
+	{
+		if (m_ActiveWeapon == WEAPON_NINJA)
+			TakeNinja();
+		//if (!Freezing && (m_Core.m_BodyHeat+1) % Server()->TickSpeed() == 0)
+		//	GameServer()->CreateDamageInd(m_Pos, 3.1415, m_Armor);
+	}
 
+	m_LastTickHeat = m_Core.m_BodyHeat;
+	
 	// handle death-tiles and leaving gamelayer
 	int Col = GameServer()->Collision()->GetCollisionAt(m_Pos.x, m_Pos.y);
 	if(((Col&CCollision::COLFLAG_DEATH) && Col<=7) || GameLayerClipped(m_Pos)) //seriously, who could possibly care.
@@ -664,7 +679,7 @@ void CCharacter::TickDefered()
 
 		// only allow dead reackoning for a top of 3 seconds
 		if(m_ReckoningTick+Server()->TickSpeed()*3 < Server()->Tick() || mem_comp(&Predicted, &Current, sizeof(CNetObj_Character)) != 0
-				|| (!CltInfo.m_CustClt && m_Core.m_Frozen > 0))
+				|| (!CltInfo.m_CustClt && m_Core.m_BodyHeat < BODYHEAT_FREEZE))
 		{
 			m_ReckoningTick = Server()->Tick();
 			m_SendCore = m_Core;
@@ -685,7 +700,14 @@ bool CCharacter::IncreaseArmor(int Amount)
 {
 	if(m_Armor >= 10)
 		return false;
+	int Former = m_Armor;
 	m_Armor = clamp(m_Armor+Amount, 0, 10);
+
+	if (m_Armor == Former)
+		return true;
+
+	GameServer()->CreateDamageInd(m_Pos, m_Armor>Former?3.1415:0, m_Armor);
+
 	return true;
 }
 
@@ -826,7 +848,7 @@ void CCharacter::Snap(int SnappingClient)
 	CNetObj_Character *pCharacter;
 
 	// measure distance between first extended and first vanilla field
-	size_t Offset = (char*)(&Measure.m_Tick) - (char*)(&Measure.m_Frz);
+	size_t Offset = (char*)(&Measure.m_Tick) - (char*)(&Measure.m_Heat);
 
 	// vanilla size for vanilla clients, extended for custom client
 	size_t Sz = sizeof (CNetObj_Character) - (CltInfo.m_CustClt?0:Offset);

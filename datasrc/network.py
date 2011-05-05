@@ -123,9 +123,9 @@ Objects = [
 	]),
 
 	NetObject("CharacterCore", [
-		NetIntAny("m_Frz"),
+		NetIntAny("m_Heat"),
 
-		#place moar custom fields here, not above m_Frz and not below m_Tick.
+		#place moar custom fields here, not above m_Heat and not below m_Tick.
 
 		NetIntAny("m_Tick"),
 		NetIntAny("m_X"),

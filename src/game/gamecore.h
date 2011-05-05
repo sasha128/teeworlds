@@ -11,6 +11,9 @@
 #include <engine/shared/protocol.h>
 #include <game/generated/protocol.h>
 
+#define MAX_BODYHEAT 10000
+#define BODYHEAT_FREEZE 3000
+
 
 class CTuneParam
 {
@@ -190,7 +193,7 @@ public:
 
 	int m_Direction;
 	int m_Angle;
-	int m_Frozen;
+	int m_BodyHeat;
 	CNetObj_PlayerInput m_Input;
 
 	int m_TriggeredEvents;

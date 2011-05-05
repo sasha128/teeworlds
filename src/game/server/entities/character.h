@@ -94,6 +94,7 @@ private:
 	int m_EmoteType;
 	int m_EmoteStop;
 
+	int m_LastTickHeat;
 	// last tick that the player took any action ie some input
 	int m_LastAction;
 
