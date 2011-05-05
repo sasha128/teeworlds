@@ -101,7 +101,7 @@ void CCharacterCore::Tick(bool UseInput)
 		int fh = m_BodyHeat;
 		int sc = ((MAX_BODYHEAT - m_BodyHeat) / 2000) + 1;
 		m_BodyHeat += (sc*sc);
-		dbg_msg("gc", "%d ---+%d---> %d", fh, m_BodyHeat-fh, m_BodyHeat);
+		//dbg_msg("gc", "%d ---+%d---> %d", fh, m_BodyHeat-fh, m_BodyHeat);
 	}
 
 	vec2 TargetDirection = normalize(vec2(m_Input.m_TargetX, m_Input.m_TargetY));
