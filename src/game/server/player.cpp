@@ -281,19 +281,27 @@ int CPlayer::BlockKillCheck()
 	if (m_pCharacter->State != BS_FROZEN) return killer;
 	if (Server()->ClientIngame(m_pCharacter->lastInteractionPlayer))
 	{
+		char aBuf[16];//for loltext
 		killer = m_pCharacter->lastInteractionPlayer;
 		double scoreStolen = min(blockScore * g_Config.m_SvScoreSteal, GameServer()->m_apPlayers[killer]->blockScore * g_Config.m_SvScoreStealLimit) / 100;
 		blockScore -= scoreStolen;
 		if (GetAccount())
 		{
 			GetAccount()->Payload()->blockScore = blockScore;
+			str_format(aBuf, sizeof aBuf, "-%.1f", scoreStolen);
+			GameServer()->CreateLolText(m_pCharacter, false, vec2(0,-100), vec2(0,-1), 50, aBuf);
 		}
 		double minSteal = (double)g_Config.m_SvScoreCreep / 1000;
 		if (scoreStolen < minSteal && GameServer()->m_apPlayers[killer]->GetAccount()) // if killer has account, give him score for unreg creeps
 			scoreStolen = minSteal;
 		GameServer()->m_apPlayers[killer]->blockScore += scoreStolen;
 		if (GameServer()->m_apPlayers[killer]->GetAccount())
+		{
 			GameServer()->m_apPlayers[killer]->GetAccount()->Payload()->blockScore = GameServer()->m_apPlayers[killer]->blockScore;
+
+			str_format(aBuf, sizeof aBuf, "+%.1f", scoreStolen);
+			GameServer()->CreateLolText(GameServer()->GetPlayerChar(killer), false, vec2(0,-100), vec2(0,-1), 50, aBuf);
+		}
 		else
 		{
 			if (g_Config.m_SvRegisterMessageInterval != 0 && (m_LastAnnoyingMsg == 0 || Server()->Tick() - m_LastAnnoyingMsg > Server()->TickSpeed()*g_Config.m_SvRegisterMessageInterval))

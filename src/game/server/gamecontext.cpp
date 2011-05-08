@@ -1471,6 +1471,9 @@ void CGameContext::ConMutes(IConsole::IResult *pResult, void *pUserData)
 
 			pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", aBuf);
 		}
+
+}
+
 void CGameContext::CreateLolText(CEntity *pParent, bool Follow, vec2 Pos, vec2 Vel, int Lifespan, const char *pText)
 {
 	CLoltext::Create(&m_World, pParent, Pos, Vel, Lifespan, pText, true, Follow);
