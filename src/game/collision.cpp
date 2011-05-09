@@ -43,7 +43,7 @@ void CCollision::Init(class CLayers *pLayers)
 		}
 		if(Index >= TILE_CUSTOM_END)
 			continue;
-		
+
 		switch(Index)
 		{
 		case TILE_DEATH:
@@ -92,13 +92,13 @@ bool CCollision::IsTileSolid(int x, int y)
 // TODO: rewrite this smarter!
 int CCollision::IntersectLine(vec2 Pos0, vec2 Pos1, vec2 *pOutCollision, vec2 *pOutBeforeCollision)
 {
-	float d = distance(Pos0, Pos1);
-	int End(d+1);
+	float Distance = distance(Pos0, Pos1);
+	int End(Distance+1);
 	vec2 Last = Pos0;
-	
+
 	for(int i = 0; i < End; i++)
 	{
-		float a = i/d;
+		float a = i/Distance;
 		vec2 Pos = mix(Pos0, Pos1, a);
 		if(CheckPoint(Pos.x, Pos.y))
 		{
@@ -122,7 +122,7 @@ void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, i
 {
 	if(pBounces)
 		*pBounces = 0;
-	
+
 	vec2 Pos = *pInoutPos;
 	vec2 Vel = *pInoutVel;
 	if(CheckPoint(Pos + Vel))
@@ -132,7 +132,7 @@ void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, i
 		{
 			pInoutVel->x *= -Elasticity;
 			if(pBounces)
-				(*pBounces)++;			
+				(*pBounces)++;
 			Affected++;
 		}
 
@@ -140,10 +140,10 @@ void CCollision::MovePoint(vec2 *pInoutPos, vec2 *pInoutVel, float Elasticity, i
 		{
 			pInoutVel->y *= -Elasticity;
 			if(pBounces)
-				(*pBounces)++;			
+				(*pBounces)++;
 			Affected++;
 		}
-		
+
 		if(Affected == 0)
 		{
 			pInoutVel->x *= -Elasticity;
@@ -175,10 +175,10 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 	// do the move
 	vec2 Pos = *pInoutPos;
 	vec2 Vel = *pInoutVel;
-	
+
 	float Distance = length(Vel);
 	int Max = (int)Distance;
-	
+
 	if(Distance > 0.00001f)
 	{
 		//vec2 old_pos = pos;
@@ -188,27 +188,27 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 			//float amount = i/(float)max;
 			//if(max == 0)
 				//amount = 0;
-			
+
 			vec2 NewPos = Pos + Vel*Fraction; // TODO: this row is not nice
-			
+
 			if(TestBox(vec2(NewPos.x, NewPos.y), Size))
 			{
 				int Hits = 0;
-				
+
 				if(TestBox(vec2(Pos.x, NewPos.y), Size))
 				{
 					NewPos.y = Pos.y;
 					Vel.y *= -Elasticity;
 					Hits++;
 				}
-				
+
 				if(TestBox(vec2(NewPos.x, Pos.y), Size))
 				{
 					NewPos.x = Pos.x;
 					Vel.x *= -Elasticity;
 					Hits++;
 				}
-				
+
 				// neither of the tests got a collision.
 				// this is a real _corner case_!
 				if(Hits == 0)
@@ -219,11 +219,11 @@ void CCollision::MoveBox(vec2 *pInoutPos, vec2 *pInoutVel, vec2 Size, float Elas
 					Vel.x *= -Elasticity;
 				}
 			}
-			
+
 			Pos = NewPos;
 		}
 	}
-	
+
 	*pInoutPos = Pos;
 	*pInoutVel = Vel;
 }
