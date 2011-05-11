@@ -84,8 +84,8 @@ void CDoor::Tick()
 		0.0f, NewPos/*dummy*/, GameServer()->GetPlayerChar(15)))) {
 
 		NewPos = pChr->GetPos();
-		dbg_msg("door", "intersecting tee at (%f, %f)", 
-				NewPos.x, NewPos.y);
+		//dbg_msg("door", "intersecting tee at (%f, %f)", 
+				//NewPos.x, NewPos.y);
 		if (m_Vert)
 			NewPos.x = m_Pos.x + (pChr->m_ProximityRadius * 
 				m_aSideHints[pChr->GetPlayer()->GetCID()]);
@@ -93,7 +93,7 @@ void CDoor::Tick()
 			NewPos.y = m_Pos.y + (pChr->m_ProximityRadius * 
 				m_aSideHints[pChr->GetPlayer()->GetCID()]);
 		
-		dbg_msg("door", "adj pos to (%f, %f)", NewPos.x, NewPos.y);
+		//dbg_msg("door", "adj pos to (%f, %f)", NewPos.x, NewPos.y);
 
 		pChr->SetPos(NewPos);		
 
@@ -113,14 +113,14 @@ void CDoor::Tick()
 		float tmp = (m_Vert ? (pChr->m_Pos.x - m_Pos.x)
 		                    : (pChr->m_Pos.y - m_Pos.y));
 
-		dbg_msg("door", "%cdist of tee %i is %f", 
-				m_Vert?'h':'v', z, tmp);
+		//dbg_msg("door", "%cdist of tee %i is %f", 
+		//		m_Vert?'h':'v', z, tmp);
 
 		int sig = (int)sign(tmp);
 				
 		if (m_aSideHints[z] != sig) {
-			dbg_msg("door", "tee %i is now on the %s side",
-					z, (sig>0)?"light":"dark");
+		//	dbg_msg("door", "tee %i is now on the %s side",
+		//			z, (sig>0)?"light":"dark");
 			m_aSideHints[z] = sig;
 		}
 	}

@@ -92,14 +92,14 @@ void CGameControllerMOD::HandlePayload()
 	if (!DummyChar)
 		return; //XXX
 	vec2 DummyPos = DummyChar->m_Pos;
-	//D("actual dummy pos is (%f,%f)",DummyPos.x,DummyPos.y);
-	int Num = GS->m_World.FindEntities(DummyPos, CFG(Radius), (CEntity**)Proxim, (sizeof Proxim) / (sizeof(CCharacter*)), NETOBJTYPE_CHARACTER);
+	D("actual dummy pos is (%f,%f)",DummyPos.x,DummyPos.y);
+	int Num = GS->m_World.FindEntities(DummyPos, CFG(Radius), (CEntity**)Proxim, (sizeof Proxim) / (sizeof(CCharacter*)), CGameWorld::ENTTYPE_CHARACTER);
 
 	DummyChar->SetCoreVel(vec2(0.0f, 0.0f));
 
 	fluct *= -1.0f;
 
-	//D("%i tees in proximity, current dir: %c, ht: %i", Num-1, (m_PayloadDir==FORE)?'F':((m_PayloadDir==BACK)?'B':'H'), m_HaltTicks);
+	D("%i tees in proximity, current dir: %c, ht: %i", Num-1, (m_PayloadDir==FORE)?'F':((m_PayloadDir==BACK)?'B':'H'), m_HaltTicks);
 
 	if (Num > 1) { /* payload itself is always part of the result set */
 		switch (m_PayloadDir) {
