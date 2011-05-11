@@ -11,14 +11,21 @@
 
 #include <game/server/gamecontext.h>
 
+#include <game/server/entities/door.h>
+
 #include "mod.h"
 
+#define MAX_FIGHTBC 64
+#define BCLEN 50
+
 #define IDLE_MSG "waiting for players..."
-#define PREPARE_MSG_RED "get in position and wait for my go! game commencing in %ds"
+#define PREPARE_MSG_RED "get in position! game commencing in %ds"
 #define PREPARE_MSG_BLUE "get ready! door will open in %ds"
 
-#define forlist(L,T,I) for(std::list<T>::const_iterator I = (L)->begin(); I != (L)->end(); ++I)
-#define forset(S,T,I) for(std::set<T>::const_iterator I = (S)->begin(); I != (S)->end(); ++I)
+#define forlist(L,T,I) for(std::list<T>::const_iterator I = (L)->begin(); \
+		I != (L)->end(); ++I)
+#define forset(S,T,I) for(std::set<T>::const_iterator I = (S)->begin(); \
+		I != (S)->end(); ++I)
 
 #define PUSH_TEAM 0
 #define DEF_TEAM 1
@@ -28,7 +35,8 @@
 #define GS GameServer()
 #define CFG(A) g_Config.m_SvPay ## A
 #define TICK Server()->Tick()
-#define D(F, ARGS...) dbg_msg("mod", "%s:%i:%s(): " F, __FILE__, __LINE__, __func__,##ARGS)
+#define D(F, ARGS...) dbg_msg("mod", "%s:%i:%s(): " F, __FILE__, __LINE__,\
+		 __func__,##ARGS)
 
 CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer) :
 	CGameControllerTDM(pGameServer), m_LastNode(NULL)
@@ -40,7 +48,8 @@ CGameControllerMOD::CGameControllerMOD(class CGameContext *pGameServer) :
 
 void CGameControllerMOD::Broadcast()
 {
-	if (!CFG(BroadcastFreq) || m_LastBroadcast + CFG(BroadcastFreq) * TS > TICK)
+	if (!CFG(BroadcastFreq) 
+			|| m_LastBroadcast + CFG(BroadcastFreq) * TS > TICK)
 		return;
 
 	for (int z = 1; z < MAX_CLIENTS; ++z)
@@ -50,7 +59,8 @@ void CGameControllerMOD::Broadcast()
 	m_LastBroadcast = TICK;
 }
 
-void CGameControllerMOD::UpdateBroadcast(int cid, const char *str, size_t len)
+void CGameControllerMOD::UpdateBroadcast(int cid, const char *str, 
+		size_t len)
 {
 	if (!str)
 		return;
@@ -83,7 +93,6 @@ void CGameControllerMOD::HandlePayload()
 		return; //XXX
 	vec2 DummyPos = DummyChar->m_Pos;
 	//D("actual dummy pos is (%f,%f)",DummyPos.x,DummyPos.y);
-	D("actual dummy pos is (%f,%f)",DummyPos.x,DummyPos.y);
 	int Num = GS->m_World.FindEntities(DummyPos, CFG(Radius), (CEntity**)Proxim, (sizeof Proxim) / (sizeof(CCharacter*)), NETOBJTYPE_CHARACTER);
 
 	DummyChar->SetCoreVel(vec2(0.0f, 0.0f));
@@ -198,7 +207,26 @@ void CGameControllerMOD::FightTick()
 
 	if (m_HaltTicks > 0)
 		--m_HaltTicks;
+	
+	FightBroadcast();
+
 }
+
+void CGameControllerMOD::FightBroadcast()
+{
+//	char BCMsg[MAX_FIGHTBC];
+//	if (m_LastFightBroadcast + Server()->TickSpeed() >= Server()->Tick()) 
+//		return;
+	
+	
+
+	//float f = 
+
+	//m_LastFightBroadcast = Server()->Tick();
+
+		
+}
+
 void CGameControllerMOD::EndTick()
 {
 	D("EndTick()");
@@ -211,6 +239,11 @@ void CGameControllerMOD::Tick()
 	if (VeryFirstTick) {
 		InitDummy();
 		VeryFirstTick = false;
+		//XXX door test
+		CDoor *d = new CDoor(&GameServer()->m_World, vec2(1166, 1000), vec2(1166, 880), "A");
+		GameServer()->m_World.InsertEntity(d);
+		d->SetOpen(false);
+		//XXX door test
 		return;//XXX
 	}
 	Broadcast();
@@ -275,7 +308,8 @@ CPathNode::CPathNode(int LocX, int LocY, bool IsCheck, CPathNode *pNext, CPathNo
 	m_Loc[1] = LocY;
 }
 
-bool CGameControllerMOD::CollectNodes(CTile *pTiles, int Width, int Height, CPathNode **ppStartNode, CPathNode **ppFinNode, std::set<CPathNode*>& rTweenerNodes, std::set<int*>& rNCHints)
+bool CGameControllerMOD::CollectNodes(CTile *pTiles, int Width, int Height, CPathNode **ppStartNode, CPathNode **ppFinNode, 
+		std::set<CPathNode*>& rTweenerNodes, std::set<int*>& rNCHints)
 {
 	int *tmp;
 	*ppStartNode = *ppFinNode = NULL;
@@ -340,7 +374,7 @@ bool CGameControllerMOD::InitPath(CTile *pTiles, int Width, int Height)
 			D("failed to find the next path vertex, you might probably have to RTFM");
 			return false; //dont care about allocated mem, we fail to start anyway
 		}
-		D("next: (%d, %d)", CurNode->LocX(), CurNode->LocY());
+		D("next: (%d, %d)%s", CurNode->LocX(), CurNode->LocY(), CurNode->IsCheckpoint()?" (chk)":"");
 		++NodeCount;
 	}
 	CurNode->SetPrev(PrevNode);
@@ -352,7 +386,42 @@ bool CGameControllerMOD::InitPath(CTile *pTiles, int Width, int Height)
 		D("warning: not all path vertices are actually being used, fix your payload path");
 
 	m_LastNode = m_LastCheckNode = StartNode;
+/*
+	int CheckCount = 0;
 
+	CurNode = StartNode;
+	do {
+		if (CurNode->IsCheckpoint()) 
+			++CheckCount;
+	} while((CurNode = CurNode->Next()));
+
+	int *CheckDists = new int[CheckCount]; // 0: distance from 0 to A, 1: distance from A to B, ..., last: distance from last checkpoint to dest
+
+	CurNode = StartNode;
+	CheckCount = 0;
+	int Index = 0;
+	while((CurNode = CurNode->Next())) {
+		if (CurNode->IsCheckpoint()) 
+			break;
+	}
+	if (!CurNode || !CurNode->HasNext()) {
+		D("payload path needs at least one checkpoint. cannot start like this.");
+		return false;
+	}
+
+	//CurNode is now at first checkpoint aka '0'
+	int DistAccum = 0;
+	CPathNode *LastNode = CurNode;
+	while((CurNode = CurNode->Next())) {
+		DistAccum += Distance(LastNode, CurNode);
+		
+		if (CurNode->IsCheckpoint() || !CurNode->HasNext()) {
+			CheckDists[Index++] = DistAccum;
+			D("CheckDists[%d] := %d (node: %d,%d)", Index-1, DistAccum, CurNode->LocX(), CurNode->LocY());
+		}
+		
+	}
+*/
 	return true;
 }
 
@@ -373,8 +442,10 @@ bool CGameControllerMOD::NodesConnectable(const CPathNode *NodeA, const CPathNod
 
 	//D("nodes (%d, %d) and (%d, %d) connectable? dist: %d, shift: %d",NodeA->LocX(),NodeA->LocY(),NodeB->LocX(),NodeB->LocY(),Dist,Shift);
 
-	if (Shift != 0 && Shift != Dist)
+	if (Shift != 0 && Shift != Dist) {
+		//D("yes, always.");
 		return true; /* always connectable since we dont have a 'real' straight or 45 deg line inbetween*/
+	}
 
 	int XStep = 0, YStep = 0;
 	if (NodeA->LocX() != NodeB->LocX())
@@ -387,11 +458,12 @@ bool CGameControllerMOD::NodesConnectable(const CPathNode *NodeA, const CPathNod
 
 	/* this is not exactly the most performant approach, but it is only done once, and anyways,
 	 * both loops, inner and outer, will probably have very few iterations for sane maps */
-	for (int x = NodeA->LocX() + XStep, y = NodeA->LocY() + YStep; x != NodeB->LocX() && y != NodeB->LocY(); x += XStep, y += YStep) {
+	for (int x = NodeA->LocX() + XStep, y = NodeA->LocY() + YStep; x != NodeB->LocX() || y != NodeB->LocY(); x += XStep, y += YStep) {
 		//D("iter: x: %d, y: %d",x, y);
 		forset(&NCHints,int*, it)
 			if ((*it)[0] == x && (*it)[1] == y) {
-				//D("nodes (%d, %d) and (%d, %d) [dist: %d, shift: %d] not connectable due to (%d, %d)",NodeA->LocX(), NodeA->LocY(), NodeB->LocX(), NodeB->LocY(),Dist, Shift, x, y);
+				//D("nodes (%d, %d) and (%d, %d) [dist: %d, shift: %d] not connectable due to (%d, %d)",
+						//NodeA->LocX(), NodeA->LocY(), NodeB->LocX(), NodeB->LocY(),Dist, Shift, x, y);
 				return false;
 			}
 	}
@@ -399,7 +471,8 @@ bool CGameControllerMOD::NodesConnectable(const CPathNode *NodeA, const CPathNod
 	return true;
 }
 
-bool CGameControllerMOD::FindNextPathNode(CPathNode **Dest, const CPathNode *CurNode, const std::set<CPathNode*>& AllNodes, const std::set<int*>& NCHints)
+bool CGameControllerMOD::FindNextPathNode(CPathNode **Dest, const CPathNode *CurNode, const std::set<CPathNode*>& AllNodes, 
+		const std::set<int*>& NCHints)
 {
 	std::set<CPathNode*> Remain;
 
@@ -423,19 +496,22 @@ bool CGameControllerMOD::FindNextPathNode(CPathNode **Dest, const CPathNode *Cur
 			Proxim.clear();
 			Proxim.insert(*it);
 			MinShift = ShiftVal(CurNode, *it);
-			//D("node (%d, %d) is closer than what we saw before (new dist/shift: %d/%d, prev minimum: %d) purging proxim set, inserting",(*it)->LocX(),(*it)->LocY(), Dist, MinShift, MinDist);
+			//D("node (%d, %d) is closer than what we saw before (new dist/shift: %d/%d, prev minimum: %d) purging proxim set, inserting",
+					//(*it)->LocX(),(*it)->LocY(), Dist, MinShift, MinDist);
 			MinDist = Dist;
 		} else if (Dist == MinDist) {
 			int Shift = ShiftVal(CurNode, *it);
 			if (Shift < MinShift) {
 				/* found a equally close, but more straightly connectable node */
 
-				//D("node (%d, %d) is equally close as we saw before, but has less shift (%d, prev: %d) purging proxim set, inserting",(*it)->LocX(),(*it)->LocY(), Shift, MinShift);
+				//D("node (%d, %d) is equally close as we saw before, but has less shift (%d, prev: %d) purging proxim set, inserting",
+						//(*it)->LocX(),(*it)->LocY(), Shift, MinShift);
 				Proxim.clear();
 				Proxim.insert(*it);
 				MinShift = Shift;
 			} else if (Shift == MinShift) {
-				//D("node (%d, %d) is just equal to our best, inserting",(*it)->LocX(),(*it)->LocY());
+				//D("node (%d, %d) is just equal to our best (dist/shift: %d/%d), inserting",
+						//(*it)->LocX(),(*it)->LocY(), MinDist, MinShift);
 				Proxim.insert(*it);
 			}
 		}

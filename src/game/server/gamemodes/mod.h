@@ -44,6 +44,7 @@ class CGameControllerMOD : public CGameControllerTDM
 		bool StartFight();
 		void UpdateBroadcast(int cid, const char *str, size_t len = 0); // 0 meaning no limit
 		void Broadcast();
+		void FightBroadcast();
 
 		bool InitPath(CTile *pTiles, int Width, int Height);
 		bool CollectNodes(CTile *pTiles, int Width, int Height, CPathNode **ppStartNode, CPathNode **ppFinNode,
