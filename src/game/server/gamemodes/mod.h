@@ -73,7 +73,7 @@ class CGameControllerMOD : public CGameControllerTDM
 
 		virtual bool Init(CTile *pTiles, int Width, int Height);
 
-		virtual bool CanSpawn(class CPlayer *pP, vec2 *pPos);
+		virtual bool CanSpawnPl(class CPlayer *pP, vec2 *pPos); // grrrrr oy
 
 };
 

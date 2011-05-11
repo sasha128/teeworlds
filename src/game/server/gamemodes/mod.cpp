@@ -264,7 +264,7 @@ void CGameControllerMOD::InitDummy()
 	CPlayer *p;
 
 	GS->m_apPlayers[DummyID] = p = new (DummyID) CPlayer(GS, DummyID, 1);
-	p->m_Last_ChangeInfo = TICK;
+	p->m_LastChangeInfo = TICK;
 
 	//p->m_TeeInfos.m_UseCustomColor = 1;
 	//p->m_TeeInfos.m_ColorBody = 35435;
@@ -289,16 +289,16 @@ bool CGameControllerMOD::Init(CTile *pTiles, int Width, int Height)
 	return true;
 }
 
-bool CGameControllerMOD::CanSpawn(class CPlayer *pP, vec2 *pPos)
+bool CGameControllerMOD::CanSpawnPl(class CPlayer *pP, vec2 *pPos)
 {
 	if (pP->GetCID() == MAX_CLIENTS - 1) {
 		if (pPos && m_LastCheckNode)
 			*pPos = m_LastCheckNode->LocVec();
 		return m_LastCheckNode;
 	} else {
-		return IGameController::CanSpawn(pP, pPos);
+		return IGameController::CanSpawn(pP->GetTeam(), pPos);
 	}
-
+	
 }
 
 CPathNode::CPathNode(int LocX, int LocY, bool IsCheck, CPathNode *pNext, CPathNode *pPrev) :
